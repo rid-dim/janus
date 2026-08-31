@@ -45,6 +45,14 @@ export function prettyPath(p) {
 	return p === home || p.startsWith(home + path.sep) ? '~' + p.slice(home.length) : p;
 }
 
+/** Lokal ausgeblendete Projekt-IDs (janus.config.json "hidden": ["id", ...]).
+ *  Die Config ist gitignoriert — Ausblenden ist rein lokal; Daten/Masterstand
+ *  bleiben unberührt, Direkt-URLs und Wissens-Hub-Referenzen funktionieren weiter. */
+export function hiddenProjectIds() {
+	const list = readConfig().hidden;
+	return Array.isArray(list) ? list.map(String) : [];
+}
+
 /** Absolute paths of linked repos (each holds its Janus data in projectSubdir()). */
 export function linkedProjectPaths() {
 	const list = readConfig().projects;

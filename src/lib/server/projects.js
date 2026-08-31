@@ -3,7 +3,7 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
 import dagre from '@dagrejs/dagre';
-import { dataRoot, projectSubdir, linkedProjectPaths, prettyPath } from './config.js';
+import { dataRoot, projectSubdir, linkedProjectPaths, prettyPath, hiddenProjectIds } from './config.js';
 import { renderMarkdown, countTasks } from './markdown.js';
 import { wikiSlugs } from './wissen.js';
 
@@ -210,7 +210,9 @@ function tageZwischen(a, b) {
 export function collectDeadlines(tage = 7) {
 	const heute = heuteStr();
 	const out = [];
+	const hidden = new Set(hiddenProjectIds());
 	for (const p of registry()) {
+		if (hidden.has(p.id)) continue;
 		const dir = path.join(p.dir, 'geplant');
 		for (const f of listMarkdown(dir)) {
 			const parsed = matter(readIfExists(path.join(dir, f)) ?? '');
@@ -236,7 +238,10 @@ export function collectDeadlines(tage = 7) {
 
 /** Lightweight summaries for the dashboard. */
 export function listProjects() {
-	const projects = registry().map((p) => ({
+	const hidden = new Set(hiddenProjectIds());
+	const projects = registry()
+		.filter((p) => !hidden.has(p.id))
+		.map((p) => ({
 		...p.manifest,
 		source: p.source,
 		repoPath: p.repoPath,

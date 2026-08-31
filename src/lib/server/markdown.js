@@ -129,7 +129,11 @@ function linkPlugin(md) {
 			const isDoc = href.startsWith('doc:');
 			const isDisk = href.startsWith('/') || href.startsWith('~') || href.startsWith('file:');
 			if (isDoc || isDisk) {
-				const target = isDoc ? href.slice(4) : href;
+				// markdown-it hat den href über normalizeLink prozentkodiert (Leerzeichen
+				// → %20, Umlaute → UTF-8-Sequenzen); openTarget() braucht aber echte
+				// Dateisystempfade. Der Traversal-Guard (resolveInDir) prüft erst nach
+				// dem Dekodieren, ein kodiertes ".." bleibt also abgefangen.
+				const target = md.utils.lib.mdurl.decode(isDoc ? href.slice(4) : href);
 				token.attrs[hrefIndex][1] = '#';
 				token.attrJoin('class', 'janus-doclink');
 				token.attrSet('data-target', target);

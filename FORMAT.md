@@ -164,6 +164,9 @@ Plotly-Figur (`{ "data": [...], "layout": {...} }`):
 
 - `[Anhang](doc:anhaenge/bericht.pdf)` – projekt-relativ (Traversal wird geblockt)
 - `[Extern](/Users/ich/Dokumente/x.pdf)` – absoluter Pfad (auch `~/...`)
+- Enthält der Pfad **Leerzeichen**, braucht das Ziel spitze Klammern
+  (CommonMark): `[Doku](<doc:anhaenge/Mein Dokument.pdf>)` – ohne sie wird der
+  Link gar nicht erst geparst.
 
 **Checkpoints** – GitHub-Task-Lists `- [ ]` / `- [x]`. Abhaken in der UI
 schreibt genau diese eine Zeile zurück.

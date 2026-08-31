@@ -19,6 +19,8 @@ als Dateien – die Janus-App zeigt Änderungen beim nächsten Laden an.
 
 Fortschritt = Checkpoints abhaken, nicht Prosa umschreiben. Kleine, zeilengenaue
 Diffs bevorzugen. Charts: `plotly`-Block mit Plotly-JSON. Doc-Links:
-`doc:anhaenge/datei.pdf` oder absoluter Pfad. Eine Datei `stand/chronik.md`
+`doc:anhaenge/datei.pdf` oder absoluter Pfad; bei Leerzeichen im Pfad das
+Ziel in spitze Klammern setzen: `[Doku](<doc:anhaenge/Mein Dokument.pdf>)`.
+Eine Datei `stand/chronik.md`
 (Einträge `- **TT.MM.** ⚖️/⚡/✉️ Text` unter `## Monat Jahr`) speist den
 Aktivitätsstreifen der Zeitleisten-Ansicht (`/projekt/<id>/zeit`).

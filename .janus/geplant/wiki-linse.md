@@ -1,8 +1,8 @@
 ---
 id: wiki-linse
-title: "Phase 1: Wiki-Linse im Einzelprojekt"
-status: in-arbeit
-start: 2026-08-30
+title: 'Phase 1: Wiki-Linse im Einzelprojekt'
+status: fertig
+start: 2026-08-30T00:00:00.000Z
 ---
 
 Wiki-Ansicht für ein einzelnes Projekt gemäß [Konzept](../stand/wiki-konzept.md):
@@ -18,4 +18,4 @@ Wiki-Ansicht für ein einzelnes Projekt gemäß [Konzept](../stand/wiki-konzept.
 - [x] Volltextsuche im Projekt (`?q=`, naiv über Titel+Body)
 - [x] FORMAT.md, README und AGENTS-Scaffold erweitert (wissen/, Wikilinks, geprueft, schemaVersion 2)
 - [x] Bestehendes CNC-Projekt migriert: vier Referenz-Seiten → wissen/ (schemaVersion 2)
-- [ ] Von Hand in der UI gegentesten (Editieren, Rotlink-Anlegen, Suche, Pflege)
+- [x] Von Hand in der UI gegentesten (Editieren, Rotlink-Anlegen, Suche, Pflege)

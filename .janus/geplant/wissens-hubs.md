@@ -1,9 +1,10 @@
 ---
 id: wissens-hubs
-title: "Phase 2: Wissens-Hubs (projektübergreifend)"
-status: in-arbeit
-depends_on: [wiki-linse]
-start: 2026-08-30
+title: 'Phase 2: Wissens-Hubs (projektübergreifend)'
+status: fertig
+depends_on:
+  - wiki-linse
+start: 2026-08-30T00:00:00.000Z
 ---
 
 Geteilte Wissensbasen als eigene Janus-Projekte, eingebunden per
@@ -16,4 +17,4 @@ Geteilte Wissensbasen als eigene Janus-Projekte, eingebunden per
 - [x] Slug-Kollisions-Warnung in der Pflege-Sektion (lokal gewinnt) + Hinweis „im Hub öffnen" bei fehlenden lokalen Seiten
 - [x] Globale Wiki-Suche im Dashboard (`/?q=`, Aggregation über alle Projekte, Projekt-Badges)
 - [x] Doku (FORMAT.md, README) + Beispieldaten in `projekte/`
-- [ ] Von Hand in der UI gegentesten (Hub-Baum, Hub-Links, externe Backlinks, Kollision)
+- [x] Von Hand in der UI gegentesten (Hub-Baum, Hub-Links, externe Backlinks, Kollision)

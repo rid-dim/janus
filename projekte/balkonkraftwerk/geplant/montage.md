@@ -4,6 +4,7 @@ title: Module & Halterung montieren
 status: in-arbeit
 depends_on: [recherche]
 start: 2026-08-26
+ende: 2026-08-29
 ---
 
 ## Checkpoints

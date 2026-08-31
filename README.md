@@ -28,7 +28,9 @@ gepinnte Chronik:
 ![Projektseite mit Stand-Panel, DAG und Chronik](docs/screenshots/projekt.png)
 
 **Dashboard** — zentraler Store und verlinkte Repos nebeneinander, mit
-Fortschritt und globaler Wiki-Suche:
+Fortschritt, globaler Wiki-Suche und einer **Fällig-Liste**: `ende:` eines
+nicht fertigen Knotens gilt als Fälligkeit, gezeigt werden Überfälliges und
+die nächsten 7 Tage (dringlichstes zuerst):
 
 ![Dashboard mit Projektkarten](docs/screenshots/dashboard.png)
 

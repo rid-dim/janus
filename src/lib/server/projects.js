@@ -185,6 +185,55 @@ function aggregateTasks(dir) {
 	return { progress: { done, total }, nodeCount: nodes };
 }
 
+/** Lokales Heute als YYYY-MM-DD (Datumsvergleiche laufen rein über Strings). */
+function heuteStr() {
+	const d = new Date();
+	return [
+		d.getFullYear(),
+		String(d.getMonth() + 1).padStart(2, '0'),
+		String(d.getDate()).padStart(2, '0')
+	].join('-');
+}
+
+/** Differenz zweier YYYY-MM-DD-Strings in ganzen Tagen (b - a). */
+function tageZwischen(a, b) {
+	const [ay, am, ad] = a.split('-').map(Number);
+	const [by, bm, bd] = b.split('-').map(Number);
+	return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000);
+}
+
+/**
+ * Fällige Knoten über alle Projekte: `ende:` auf einem nicht fertigen
+ * geplant/-Knoten gilt als Fälligkeitsdatum. Liefert Überfälliges plus alles,
+ * was in den nächsten `tage` Tagen ansteht — dringlichstes zuerst.
+ */
+export function collectDeadlines(tage = 7) {
+	const heute = heuteStr();
+	const out = [];
+	for (const p of registry()) {
+		const dir = path.join(p.dir, 'geplant');
+		for (const f of listMarkdown(dir)) {
+			const parsed = matter(readIfExists(path.join(dir, f)) ?? '');
+			const status = (parsed.data.status || 'offen').toLowerCase();
+			if (status === 'fertig') continue;
+			const ende = toDateStr(parsed.data.ende ?? parsed.data.end);
+			if (!ende) continue;
+			const inTagen = tageZwischen(heute, ende);
+			if (inTagen > tage) continue;
+			out.push({
+				projektId: p.id,
+				projektTitel: p.manifest.titel,
+				knotenId: parsed.data.id || f.replace(/\.md$/i, ''),
+				titel: parsed.data.title || parsed.data.titel || titleFromFilename(f),
+				ende,
+				inTagen
+			});
+		}
+	}
+	out.sort((a, b) => a.inTagen - b.inTagen || a.titel.localeCompare(b.titel, 'de'));
+	return out;
+}
+
 /** Lightweight summaries for the dashboard. */
 export function listProjects() {
 	const projects = registry().map((p) => ({

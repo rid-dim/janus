@@ -127,6 +127,9 @@ ende: 2026-06-30                    # optional – fehlt = läuft bis heute
 - Der Fortschritt eines Knotens = abgehakte / gesamte Checkpoints im Body.
 - `start:` / `ende:` sind optional (`JJJJ-MM-TT`, auch `TT.MM.JJJJ`) und speisen
   den Themen-Gantt der Zeitleisten-Ansicht.
+- `ende:` auf einem **nicht fertigen** Knoten gilt zugleich als Fälligkeit:
+  das Dashboard zeigt Überfälliges und alles, was in den nächsten 7 Tagen
+  ansteht, als „Fällig"-Liste (dringlichstes zuerst).
 
 ## abgeschlossen/\*.md – das Archiv
 

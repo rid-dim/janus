@@ -11,6 +11,18 @@
 		goto(q ? '/?q=' + encodeURIComponent(q) : '/', { keepFocus: true });
 	}
 
+	function wannLabel(n) {
+		if (n < -1) return `seit ${-n} Tagen überfällig`;
+		if (n === -1) return 'seit gestern überfällig';
+		if (n === 0) return 'heute';
+		if (n === 1) return 'morgen';
+		return `in ${n} Tagen`;
+	}
+	function datumLabel(iso) {
+		const [y, m, d] = iso.split('-');
+		return `${+d}.${+m}.${y}`;
+	}
+
 	let newTitel = $state('');
 	let linkPath = $state('');
 	let linkTitel = $state('');
@@ -119,6 +131,24 @@
 		</div>
 	</details>
 
+	{#if data.deadlines.length > 0}
+		<section class="faellig">
+			<h2>Fällig <span class="dim">(nächste 7 Tage)</span></h2>
+			{#each data.deadlines as d (d.projektId + ':' + d.knotenId)}
+				<a
+					class="f-item"
+					class:ueberfaellig={d.inTagen < 0}
+					href="/projekt/{d.projektId}?knoten={d.knotenId}"
+				>
+					<span class="f-wann">{wannLabel(d.inTagen)}</span>
+					<span class="f-titel">{d.titel}</span>
+					<span class="f-badge">{d.projektTitel}</span>
+					<span class="f-datum">{datumLabel(d.ende)}</span>
+				</a>
+			{/each}
+		</section>
+	{/if}
+
 	{#if data.projects.length === 0}
 		<div class="empty">
 			<p>Noch keine Projekte.</p>
@@ -156,6 +186,66 @@
 		font: inherit;
 		font-size: 13.5px;
 	}
+	.faellig {
+		margin-bottom: 22px;
+	}
+	.faellig h2 {
+		font-size: 15px;
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+	.f-item {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		padding: 7px 12px;
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		margin-bottom: 8px;
+		text-decoration: none;
+		color: var(--text);
+	}
+	.f-item:hover {
+		border-color: var(--accent);
+	}
+	.f-wann {
+		flex: none;
+		min-width: 96px;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--future);
+	}
+	.f-item.ueberfaellig {
+		border-color: color-mix(in srgb, var(--kat-vorfall) 45%, var(--border));
+	}
+	.f-item.ueberfaellig .f-wann {
+		color: var(--kat-vorfall);
+	}
+	.f-titel {
+		font-weight: 600;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.f-badge {
+		flex: none;
+		font-size: 11px;
+		font-weight: 700;
+		padding: 1px 8px;
+		border-radius: 99px;
+		background: var(--surface-2);
+		color: var(--text-dim);
+	}
+	.f-datum {
+		flex: none;
+		margin-left: auto;
+		font-size: 12px;
+		color: var(--text-dim);
+		font-variant-numeric: tabular-nums;
+	}
+
 	.wiki-treffer {
 		margin-bottom: 22px;
 	}

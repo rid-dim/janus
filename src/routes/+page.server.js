@@ -1,4 +1,4 @@
-import { listProjects, registry } from '$lib/server/projects.js';
+import { listProjects, registry, collectDeadlines } from '$lib/server/projects.js';
 import { dataRoot, projectSubdir } from '$lib/server/config.js';
 import { loadWissen, sucheWissen } from '$lib/server/wissen.js';
 
@@ -18,6 +18,7 @@ export function load({ url }) {
 
 	return {
 		projects: listProjects(),
+		deadlines: collectDeadlines(),
 		dataRoot: dataRoot(),
 		projectSubdir: projectSubdir(),
 		q,

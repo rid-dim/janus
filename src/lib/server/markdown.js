@@ -128,6 +128,17 @@ function linkPlugin(md) {
 			const href = token.attrs[hrefIndex][1];
 			const isDoc = href.startsWith('doc:');
 			const isDisk = href.startsWith('/') || href.startsWith('~') || href.startsWith('file:');
+			// Relative Verweise auf Projekt-Markdown (z. B. "verwaltung-homewise.md"
+			// aus stand/) springen zur entsprechenden Stand-Sektion derselben Seite.
+			if (!isDoc && !isDisk && /^[\w./-]+\.md$/i.test(href) && !/^[a-z]+:/i.test(href)) {
+				const name = md.utils.lib.mdurl
+					.decode(href)
+					.split('/')
+					.pop()
+					.replace(/\.md$/i, '');
+				token.attrs[hrefIndex][1] = '#stand-' + encodeURIComponent(name);
+				return defaultOpen(tokens, idx, options, env, self);
+			}
 			if (isDoc || isDisk) {
 				// markdown-it hat den href über normalizeLink prozentkodiert (Leerzeichen
 				// → %20, Umlaute → UTF-8-Sequenzen); openTarget() braucht aber echte

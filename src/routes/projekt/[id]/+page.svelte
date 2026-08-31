@@ -516,7 +516,7 @@
 </div>
 
 {#snippet standCard(sec, movable)}
-	<article class="section-card">
+	<article class="section-card" id={'stand-' + sec.rel.split('/').pop().replace(/\.md$/i, '')}>
 		<div class="card-head">
 			<h3>{sec.title}</h3>
 			{#if editing}

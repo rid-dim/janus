@@ -6,6 +6,9 @@ node_modules
 .env.*
 !.env.example
 /janus.config.json
+# lokale Projektdaten im zentralen Store — nur das Demo-Projekt ist Teil des Repos
+/projekte/*
+!/projekte/balkonkraftwerk
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .DS_Store

@@ -21,6 +21,8 @@ Coding-Agents (Claude Code / Codex) pflegbar.
 
 ## Schnellstart
 
+Voraussetzung: Node.js ≥ 20.
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173  (Beispieldaten sind schon dabei)
@@ -59,7 +61,10 @@ Auf dem Dashboard unter **„+ Projekt anlegen oder verlinken"**:
    und legt darin einen `.janus/`-Ordner an (bzw. liest einen vorhandenen). Der
    Projektstand wird dann **mit dem Code zusammen** versioniert und über *dessen*
    Git-Remote synchronisiert. Ein Agent, der im Repo am Code arbeitet, hakt im
-   selben Commit einen Checkpoint in `.janus/geplant/…` ab.
+   selben Commit einen Checkpoint in `.janus/geplant/…` ab. Dieses Repo macht
+   das selbst vor: in [`.janus/`](./.janus) trackt Janus seine eigene
+   Entwicklung — verlink das geklonte Repo testweise, dann taucht es im
+   Dashboard auf.
 
 Beide Wege laufen nebeneinander. Verlinkte Repos stehen in `janus.config.json`:
 

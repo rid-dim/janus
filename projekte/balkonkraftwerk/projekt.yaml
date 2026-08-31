@@ -1,0 +1,8 @@
+schemaVersion: 2
+titel: Balkonkraftwerk
+status: in-arbeit
+beschreibung: Fiktives Beispielprojekt — zeigt Stand-Panel, DAG, Zeitleiste, Archiv und Wiki-Linse.
+tags: [demo]
+stand_reihenfolge:
+  - 00-ueberblick
+  - technik

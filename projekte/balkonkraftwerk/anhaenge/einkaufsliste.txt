@@ -1,0 +1,11 @@
+Einkaufsliste Balkonkraftwerk (Beispiel-Anhang im lokalen Document Store)
+
+- 2x Solarmodul 435 W
+- 1x Mikrowechselrichter 800 W
+- Geländerhalterung Süd, 2 Paar
+- 10 m Anschlussleitung, Kabelbinder UV-fest
+
+Dokument-Links im Markdown wie [Einkaufsliste](doc:anhaenge/einkaufsliste.txt)
+öffnen diese Datei im Standardprogramm des Betriebssystems. Per Drag & Drop
+hierher kopierte Dateien bleiben Teil des Projektordners – so ist alles in
+sich geschlossen und umziehbar.

@@ -1,0 +1,11 @@
+schemaVersion: 2
+id: janus-app
+titel: Janus
+status: in-arbeit
+beschreibung: Schlanker, datei-basierter Projekt- & Planungs-Tracker in SvelteKit — trackt sich hier selbst (Dogfooding).
+tags: [tooling, sveltekit, dogfood]
+stand_reihenfolge:
+  - 00-ueberblick
+  - architektur
+  - wiki-konzept
+  - fortschritt

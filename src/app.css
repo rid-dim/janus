@@ -1,0 +1,333 @@
+:root {
+	color-scheme: light;
+	--bg: #f6f7f9;
+	--surface: #ffffff;
+	--surface-2: #f0f2f5;
+	--border: #dfe3e8;
+	--text: #1f2933;
+	--text-dim: #66727e;
+	--past: #2f6fd0; /* Blick zurück – aktueller Stand */
+	--future: #d97a2b; /* Blick nach vorn – geplant */
+	--accent: #2f6fd0;
+	--ok: #2f9e6f;
+	--radius: 12px;
+	--shadow: 0 1px 2px rgba(20, 30, 45, 0.06), 0 4px 16px rgba(20, 30, 45, 0.05);
+	--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+	--sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--topbar-h: 50px;
+
+	/* Zeitleiste: Kategorien der Chronik + Breite der Beschriftungsspalte */
+	--kat-entscheidung: #c1861a; /* ⚖️ Entscheidung – bernstein */
+	--kat-vorfall: #d1495b; /* ⚡ Vorfall – rot/orange */
+	--kat-korrespondenz: #2f6fd0; /* ✉️ Korrespondenz – blau */
+	--kat-sonstig: #8a94a0;
+	--zeit-lab: 240px;
+}
+
+/* Dunkle Palette: greift bei System-Dunkelmodus (solange nicht explizit "light"
+   gewählt wurde) sowie bei explizitem data-theme="dark". Die beiden Blöcke
+   müssen inhaltlich identisch bleiben – CSS kann Media-Query und Selektor
+   nicht in einer Regel kombinieren. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		color-scheme: dark;
+		--bg: #12161c;
+		--surface: #1a1f27;
+		--surface-2: #222833;
+		--border: #2c333f;
+		--text: #e6eaef;
+		--text-dim: #97a1ad;
+		--past: #7db3ff;
+		--future: #ffb877;
+		--accent: #7db3ff;
+		--ok: #56c596;
+		--shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+		--kat-entscheidung: #e6b055;
+		--kat-vorfall: #ef7080;
+		--kat-korrespondenz: #7db3ff;
+		--kat-sonstig: #7d8794;
+	}
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--bg: #12161c;
+	--surface: #1a1f27;
+	--surface-2: #222833;
+	--border: #2c333f;
+	--text: #e6eaef;
+	--text-dim: #97a1ad;
+	--past: #7db3ff;
+	--future: #ffb877;
+	--accent: #7db3ff;
+	--ok: #56c596;
+	--shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
+	--kat-entscheidung: #e6b055;
+	--kat-vorfall: #ef7080;
+	--kat-korrespondenz: #7db3ff;
+	--kat-sonstig: #7d8794;
+}
+
+@media (max-width: 760px) {
+	:root {
+		--zeit-lab: 130px;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--sans);
+	font-size: 15px;
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+}
+
+a {
+	color: var(--accent);
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+.janus-topbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	height: var(--topbar-h);
+	padding: 0 22px;
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+	position: sticky;
+	top: 0;
+	z-index: 20;
+}
+.janus-logo {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	font-weight: 650;
+	letter-spacing: 0.2px;
+	color: var(--text);
+}
+.janus-logo svg {
+	width: 24px;
+	height: 24px;
+}
+
+/* --- Theme-Umschalter (Hell / Dunkel / System) --- */
+.theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	margin-left: auto;
+	padding: 4px 11px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: var(--surface-2);
+	color: var(--text-dim);
+	font-family: var(--sans);
+	font-size: 12.5px;
+	font-weight: 600;
+	cursor: pointer;
+}
+.theme-toggle:hover {
+	color: var(--text);
+	border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.theme-toggle svg {
+	width: 15px;
+	height: 15px;
+}
+@media (max-width: 560px) {
+	.theme-toggle-label {
+		display: none;
+	}
+}
+
+.container {
+	max-width: 1180px;
+	margin: 0 auto;
+	padding: 26px 22px 60px;
+}
+
+/* --- status pills --- */
+.pill {
+	display: inline-block;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	border: 1px solid var(--border);
+	background: var(--surface-2);
+	color: var(--text-dim);
+}
+.pill.status-aktiv,
+.pill.status-in-arbeit {
+	color: var(--future);
+	border-color: color-mix(in srgb, var(--future) 45%, var(--border));
+	background: color-mix(in srgb, var(--future) 12%, transparent);
+}
+.pill.status-fertig,
+.pill.status-done,
+.pill.status-erledigt {
+	color: var(--ok);
+	border-color: color-mix(in srgb, var(--ok) 45%, var(--border));
+	background: color-mix(in srgb, var(--ok) 12%, transparent);
+}
+
+/* --- Ansichts-Umschalter (Wiki / Zeitleiste) --- */
+.viewtabs {
+	display: inline-flex;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid var(--border);
+	border-radius: 9px;
+	background: var(--surface-2);
+}
+.viewtabs .vtab {
+	padding: 3px 11px;
+	border-radius: 7px;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--text-dim);
+	text-decoration: none;
+	white-space: nowrap;
+}
+.viewtabs .vtab:hover {
+	color: var(--text);
+	text-decoration: none;
+}
+.viewtabs .vtab.on {
+	background: var(--surface);
+	color: var(--text);
+	box-shadow: 0 1px 2px rgba(20, 30, 45, 0.08);
+}
+
+/* --- progress bar --- */
+.progress {
+	height: 7px;
+	border-radius: 999px;
+	background: var(--surface-2);
+	overflow: hidden;
+}
+.progress > span {
+	display: block;
+	height: 100%;
+	background: linear-gradient(90deg, var(--past), var(--future));
+}
+
+/* --- rendered markdown --- */
+.md :is(h1, h2, h3) {
+	line-height: 1.25;
+	margin: 1.2em 0 0.5em;
+}
+.md h1 {
+	font-size: 1.5em;
+}
+.md h2 {
+	font-size: 1.22em;
+}
+.md h3 {
+	font-size: 1.05em;
+}
+.md p {
+	margin: 0.6em 0;
+}
+.md ul,
+.md ol {
+	padding-left: 1.3em;
+}
+.md code {
+	font-family: var(--mono);
+	font-size: 0.86em;
+	background: var(--surface-2);
+	padding: 1px 5px;
+	border-radius: 5px;
+}
+.md pre {
+	background: var(--surface-2);
+	padding: 12px 14px;
+	border-radius: 8px;
+	overflow: auto;
+}
+.md pre code {
+	background: none;
+	padding: 0;
+}
+.md blockquote {
+	margin: 0.8em 0;
+	padding: 2px 14px;
+	border-left: 3px solid var(--border);
+	color: var(--text-dim);
+}
+.md li.janus-task {
+	list-style: none;
+	margin-left: -1.15em;
+	cursor: pointer;
+}
+/* Erledigte Checkpoints: Text durchstreichen und dämpfen. */
+.md li.janus-task:has(.janus-cb:checked) {
+	text-decoration: line-through;
+	text-decoration-color: color-mix(in srgb, var(--text-dim) 70%, transparent);
+	color: var(--text-dim);
+}
+.md .janus-cb {
+	margin-right: 8px;
+	transform: translateY(1px);
+	cursor: pointer;
+	accent-color: var(--accent);
+}
+.md .janus-doclink {
+	border-bottom: 1px dashed color-mix(in srgb, var(--accent) 60%, transparent);
+	cursor: pointer;
+}
+.md .janus-doclink::before {
+	content: "📎 ";
+	font-size: 0.85em;
+}
+/* [[Wikilinks]] auf wissen/-Seiten; .rot = Ziel existiert noch nicht. */
+.md .janus-wikilink {
+	color: var(--accent);
+	text-decoration: none;
+	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.md .janus-wikilink:hover {
+	border-bottom-style: double;
+}
+.md .janus-wikilink.rot {
+	color: #d33;
+	border-bottom: 1px dashed color-mix(in srgb, #d33 60%, transparent);
+}
+.md .janus-wikilink.hub {
+	border-bottom-style: dotted;
+}
+.md .janus-wikilink.hub::after {
+	content: " ⤴";
+	font-size: 0.75em;
+	opacity: 0.6;
+}
+.md .janus-wikilink.plain {
+	color: inherit;
+	border-bottom: 1px dotted var(--border);
+}
+.janus-plot {
+	margin: 14px 0;
+	min-height: 60px;
+}
+.janus-plot-fallback {
+	color: var(--text-dim);
+	font-size: 13px;
+}

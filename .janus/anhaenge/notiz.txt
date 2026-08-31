@@ -1,0 +1,6 @@
+Beispiel-Anhang im lokalen Document Store.
+
+Dokument-Links im Markdown wie [Kurz-Notiz](doc:anhaenge/notiz.txt) öffnen diese
+Datei im Standardprogramm des Betriebssystems. Per Drag & Drop hierher kopierte
+Dateien bleiben Teil des Projektordners – so ist alles in sich geschlossen und
+umziehbar.

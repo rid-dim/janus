@@ -3,7 +3,7 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
 import dagre from '@dagrejs/dagre';
-import { dataRoot, projectSubdir, linkedProjectPaths } from './config.js';
+import { dataRoot, projectSubdir, linkedProjectPaths, prettyPath } from './config.js';
 import { renderMarkdown, countTasks } from './markdown.js';
 import { wikiSlugs } from './wissen.js';
 
@@ -191,7 +191,7 @@ export function listProjects() {
 		...p.manifest,
 		source: p.source,
 		repoPath: p.repoPath,
-		location: p.source === 'linked' ? p.repoPath : 'Zentraler Store',
+		location: p.source === 'linked' ? prettyPath(p.repoPath) : 'Zentraler Store',
 		...aggregateTasks(p.dir)
 	}));
 	projects.sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
@@ -360,7 +360,7 @@ export function getProject(id) {
 		...manifest,
 		source: entry.source,
 		repoPath: entry.repoPath,
-		location: entry.source === 'linked' ? entry.repoPath : 'Zentraler Store',
+		location: entry.source === 'linked' ? prettyPath(entry.repoPath) : 'Zentraler Store',
 		stand,
 		geplant: { nodes, edges, ...size },
 		abgeschlossen,

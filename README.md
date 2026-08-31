@@ -19,6 +19,29 @@ Der ganze Inhalt lebt als Markdown-Dateien auf der Platte – die App ist nur di
 Ansicht darauf. Dadurch ist alles exportierbar, git-fähig und direkt von
 Coding-Agents (Claude Code / Codex) pflegbar.
 
+## Screenshots
+
+**Projektseite** — links der aktuelle Stand (Markdown pro Thema, Plotly-Chart),
+in der Mitte die geplanten Wege als DAG mit abhakbaren Checkpoints, rechts eine
+gepinnte Chronik:
+
+![Projektseite mit Stand-Panel, DAG und Chronik](docs/screenshots/projekt.png)
+
+**Dashboard** — zentraler Store und verlinkte Repos nebeneinander, mit
+Fortschritt und globaler Wiki-Suche:
+
+![Dashboard mit Projektkarten](docs/screenshots/dashboard.png)
+
+**Zeitleiste** — Aktivitätsstreifen aus der Chronik plus Themen-Gantt aus den
+`start:`/`ende:`-Angaben der Knoten:
+
+![Zeitleiste mit Aktivitätsstreifen und Themen-Gantt](docs/screenshots/zeit.png)
+
+**Wiki-Linse** — Referenzwissen mit `[[wikilinks]]`, Backlinks, Rotlinks und
+`geprueft:`-Stempeln:
+
+![Wiki-Linse mit Backlinks und Rotlink](docs/screenshots/wiki.png)
+
 ## Schnellstart
 
 Voraussetzung: Node.js ≥ 20.

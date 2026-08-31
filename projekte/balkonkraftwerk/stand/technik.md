@@ -1,5 +1,3 @@
-## Technik
-
 Geplant sind zwei 435-W-Module am Südbalkon mit einem 800-W-Wechselrichter
 (siehe [[wechselrichter]] im Wiki). Erwarteter Ertrag nach der
 Standort-Recherche (Beispieldaten — ein `plotly`-Block im Markdown wird beim

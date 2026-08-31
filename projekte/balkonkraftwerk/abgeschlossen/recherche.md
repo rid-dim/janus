@@ -2,7 +2,7 @@
 id: recherche
 title: Recherche & Komponentenwahl
 status: fertig
-start: 2026-08-16
+start: 2026-07-21
 ende: 2026-08-25
 depends_on: []
 ---

@@ -38,6 +38,13 @@ export function projectSubdir() {
 	return readConfig().projectDir || '.janus';
 }
 
+/** Inverse of expandPath for display: home directory prefix back to "~". */
+export function prettyPath(p) {
+	if (!p) return p;
+	const home = os.homedir();
+	return p === home || p.startsWith(home + path.sep) ? '~' + p.slice(home.length) : p;
+}
+
 /** Absolute paths of linked repos (each holds its Janus data in projectSubdir()). */
 export function linkedProjectPaths() {
 	const list = readConfig().projects;

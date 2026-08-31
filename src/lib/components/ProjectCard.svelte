@@ -22,7 +22,7 @@
 	</div>
 	<div class="card-foot">
 		<span class="src src-{project.source}">{project.source === 'linked' ? 'im Repo' : 'Store'}</span>
-		<span class="loc" title={project.location}>{project.location}</span>
+		<span class="loc" title={project.location}>&lrm;{project.location}</span>
 	</div>
 	{#if project.tags?.length}
 		<div class="card-tags">

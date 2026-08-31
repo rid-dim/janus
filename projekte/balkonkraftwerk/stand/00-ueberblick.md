@@ -1,4 +1,6 @@
-## Überblick
+---
+title: Worum geht's
+---
 
 Ein (fiktives) Balkonkraftwerk: zwei Module ans Südgeländer, Wechselrichter
 dran, anmelden, einstecken. Dieses Projekt ist Beispieldatensatz für Janus —

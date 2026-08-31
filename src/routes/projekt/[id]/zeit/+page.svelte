@@ -14,7 +14,8 @@
 
 	onMount(() => {
 		try {
-			const s = Number(localStorage.getItem('janus.zeit.zoom'));
+			const raw = localStorage.getItem('janus.zeit.zoom');
+			const s = raw === null ? NaN : Number(raw);
 			if (Number.isFinite(s) && s >= 0 && s < STUFEN.length) stufe = s;
 		} catch {
 			/* ignore */

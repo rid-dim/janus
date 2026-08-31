@@ -12,4 +12,8 @@ Kurzlog (neueste zuerst). ⚖️ Entscheidung · ⚡ Meilenstein · ✉️ Feedb
 - **25.08.** ⚡ Recherche abgeschlossen, Komponenten stehen fest
   (siehe Archiv: `abgeschlossen/recherche.md`).
 - **19.08.** ✉️ Vermieter hat der Montage am Geländer schriftlich zugestimmt.
-- **16.08.** ⚡ Projekt gestartet, erste Einkaufsliste in `anhaenge/`.
+- **16.08.** ⚡ Erste Einkaufsliste in `anhaenge/`.
+
+## Juli 2026
+
+- **21.07.** ⚡ Projekt gestartet — Recherche zu Modulen und Rechtslage beginnt.

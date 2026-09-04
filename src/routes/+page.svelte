@@ -11,12 +11,16 @@
 		goto(q ? '/?q=' + encodeURIComponent(q) : '/', { keepFocus: true });
 	}
 
-	function wannLabel(n) {
-		if (n < -1) return `seit ${-n} Tagen überfällig`;
-		if (n === -1) return 'seit gestern überfällig';
-		if (n === 0) return 'heute';
-		if (n === 1) return 'morgen';
-		return `in ${n} Tagen`;
+	function wannLabel(d) {
+		if (d.sofort) return 'sofort';
+		if (d.laufend) return 'läuft';
+		const n = d.inTagen;
+		const c = d.circa ? '~' : '';
+		if (n < -1) return `${c}seit ${-n} Tagen überfällig`;
+		if (n === -1) return c + 'seit gestern überfällig';
+		if (n === 0) return c + 'heute';
+		if (n === 1) return c + 'morgen';
+		return `${c}in ${n} Tagen`;
 	}
 	function datumLabel(iso) {
 		const [y, m, d] = iso.split('-');
@@ -134,16 +138,18 @@
 	{#if data.deadlines.length > 0}
 		<section class="faellig">
 			<h2>Fällig <span class="dim">(nächste 7 Tage)</span></h2>
-			{#each data.deadlines as d (d.projektId + ':' + d.knotenId)}
+			{#each data.deadlines as d (d.projektId + ':' + (d.knotenId ?? d.ende + ':' + d.titel))}
 				<a
 					class="f-item"
 					class:ueberfaellig={d.inTagen < 0}
-					href="/projekt/{d.projektId}?knoten={d.knotenId}"
+					class:termin={d.quelle === 'termin'}
+					href={d.href}
+					title={d.quelle === 'termin' ? 'Aus der Termine-Liste des Projekts' : 'ende: des Knotens'}
 				>
-					<span class="f-wann">{wannLabel(d.inTagen)}</span>
+					<span class="f-wann">{wannLabel(d)}</span>
 					<span class="f-titel">{d.titel}</span>
 					<span class="f-badge">{d.projektTitel}</span>
-					<span class="f-datum">{datumLabel(d.ende)}</span>
+					<span class="f-datum">{d.circa ? '≈ ' : ''}{datumLabel(d.ende)}</span>
 				</a>
 			{/each}
 		</section>
@@ -221,6 +227,9 @@
 	}
 	.f-item.ueberfaellig .f-wann {
 		color: var(--kat-vorfall);
+	}
+	.f-item.termin .f-titel {
+		font-weight: 500;
 	}
 	.f-titel {
 		font-weight: 600;

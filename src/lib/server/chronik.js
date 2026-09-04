@@ -19,7 +19,7 @@
 const MONATS_RE =
 	/\b(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember|jan|feb|mär|maer|mrz|apr|jun|jul|aug|sept|sep|okt|nov|dez)\b/g;
 
-const MONAT_NR = {
+export const MONAT_NR = {
 	januar: 1,
 	jan: 1,
 	februar: 2,

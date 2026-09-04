@@ -6,6 +6,7 @@ import dagre from '@dagrejs/dagre';
 import { dataRoot, projectSubdir, linkedProjectPaths, prettyPath, hiddenProjectIds } from './config.js';
 import { renderMarkdown, countTasks } from './markdown.js';
 import { wikiSlugs } from './wissen.js';
+import { parseTermine, heuteStr, tageZwischen } from './termine.js';
 
 function readIfExists(p) {
 	try {
@@ -185,27 +186,29 @@ function aggregateTasks(dir) {
 	return { progress: { done, total }, nodeCount: nodes };
 }
 
-/** Lokales Heute als YYYY-MM-DD (Datumsvergleiche laufen rein über Strings). */
-function heuteStr() {
-	const d = new Date();
-	return [
-		d.getFullYear(),
-		String(d.getMonth() + 1).padStart(2, '0'),
-		String(d.getDate()).padStart(2, '0')
-	].join('-');
+/** Ein Listeneintrag der Termine-Datei ist eine Zeile Markdown → inline-HTML ohne <p>-Hülle. */
+function inlineHtml(text, env) {
+	return renderMarkdown(text, env)
+		.trim()
+		.replace(/^<p>/, '')
+		.replace(/<\/p>$/, '');
 }
 
-/** Differenz zweier YYYY-MM-DD-Strings in ganzen Tagen (b - a). */
-function tageZwischen(a, b) {
-	const [ay, am, ad] = a.split('-').map(Number);
-	const [by, bm, bd] = b.split('-').map(Number);
-	return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000);
+function termineMitHtml(body, env) {
+	const t = parseTermine(body);
+	return {
+		...t,
+		introHtml: t.intro ? renderMarkdown(t.intro, env) : '',
+		eintraege: t.eintraege.map((e) => ({ ...e, html: inlineHtml(e.text, env) })),
+		ohneDatum: t.ohneDatum.map((s) => ({ ...s, eintraege: s.eintraege.map((e) => ({ ...e, html: inlineHtml(e.text, env) })) }))
+	};
 }
 
 /**
- * Fällige Knoten über alle Projekte: `ende:` auf einem nicht fertigen
- * geplant/-Knoten gilt als Fälligkeitsdatum. Liefert Überfälliges plus alles,
- * was in den nächsten `tage` Tagen ansteht — dringlichstes zuerst.
+ * Fällige Einträge über alle Projekte, dringlichstes zuerst – aus zwei Quellen:
+ *   - `ende:` auf einem nicht fertigen geplant/-Knoten (quelle: 'knoten')
+ *   - datierte Einträge einer stand/-Datei mit `typ: termine` (quelle: 'termin')
+ * Geliefert wird Überfälliges plus alles, was in den nächsten `tage` Tagen ansteht.
  */
 export function collectDeadlines(tage = 7) {
 	const heute = heuteStr();
@@ -222,14 +225,45 @@ export function collectDeadlines(tage = 7) {
 			if (!ende) continue;
 			const inTagen = tageZwischen(heute, ende);
 			if (inTagen > tage) continue;
+			const knotenId = parsed.data.id || f.replace(/\.md$/i, '');
 			out.push({
+				quelle: 'knoten',
 				projektId: p.id,
 				projektTitel: p.manifest.titel,
-				knotenId: parsed.data.id || f.replace(/\.md$/i, ''),
+				knotenId,
 				titel: parsed.data.title || parsed.data.titel || titleFromFilename(f),
 				ende,
-				inTagen
+				inTagen,
+				circa: false,
+				laufend: false,
+				href: `/projekt/${p.id}?knoten=${encodeURIComponent(knotenId)}`
 			});
+		}
+		// Termine-Dateien: stand/*.md mit `typ: termine`
+		const standDir = path.join(p.dir, 'stand');
+		for (const f of listMarkdown(standDir)) {
+			const parsed = matter(readIfExists(path.join(standDir, f)) ?? '');
+			if ((parsed.data.typ || '').toString().trim().toLowerCase() !== 'termine') continue;
+			const t = parseTermine(parsed.content, heute);
+			for (const e of t.eintraege) {
+				if (e.erledigt || e.inTagen > tage) continue;
+				out.push({
+					quelle: 'termin',
+					projektId: p.id,
+					projektTitel: p.manifest.titel,
+					knotenId: null,
+					// Datumsangabe vorn abschneiden (steht schon in `ende`), Rest ist der Titel
+					titel: (e.sofort || !e.klartext.startsWith(e.label)
+						? e.klartext
+						: e.klartext.slice(e.label.length).replace(/^\s*(\([^)]*\))?\s*[—–:-]?\s*/, '')) || e.klartext,
+					ende: e.datum,
+					inTagen: e.inTagen,
+					circa: e.circa,
+					laufend: e.laufend,
+					sofort: e.sofort,
+					href: `/projekt/${p.id}#stand-${encodeURIComponent(f.replace(/\.md$/i, ''))}`
+				});
+			}
 		}
 	}
 	out.sort((a, b) => a.inTagen - b.inTagen || a.titel.localeCompare(b.titel, 'de'));
@@ -376,13 +410,17 @@ export function getProject(id) {
 	const stand = standFiles.map((f) => {
 		const rel = path.join('stand', f);
 		const parsed = matter(readIfExists(path.join(dir, rel)) ?? '');
+		const typ = (parsed.data.typ || '').toString().trim().toLowerCase() || null;
 		return {
 			id: f.replace(/\.md$/i, ''),
 			rel,
 			title: parsed.data.title || parsed.data.titel || titleFromFilename(f),
 			pin: (parsed.data.pin || '').toString().trim().toLowerCase() || null,
+			typ,
 			body: parsed.content,
-			html: renderMarkdown(parsed.content, env)
+			html: renderMarkdown(parsed.content, env),
+			// `typ: termine`: Wiedervorlage-Liste, die die App selbst nach Datum sortiert
+			termine: typ === 'termine' ? termineMitHtml(parsed.content, env) : null
 		};
 	});
 

@@ -5,6 +5,17 @@ pin: right
 
 Kurzlog der Janus-Entwicklung (neueste zuerst). ⚖️ Entscheidung · ⚡ Meilenstein · ✉️ Feedback
 
+## September 2026
+
+- **04.09.** ⚡ **Termine-Parser**: `stand/termine.md` mit `typ: termine` wird
+  nach Datum sortiert gerendert (exakte und unscharfe Angaben wie „~Mitte
+  September“, „Q1 2027“) und speist die Fällig-Liste des Dashboards. ⚖️ Die
+  Datei bleibt Quelle der Wahrheit, die App sortiert nur.
+
+- **03.09.** ⚡ **Abschließen-Button**: Knoten wandern per Klick nach
+  `abgeschlossen/` (Status `fertig`, `ende:` = heute), „Reaktivieren" holt sie
+  zurück – bisher war das ein manueller Datei-Umzug. ✉️ Feedback aus der Praxis.
+
 ## August 2026
 
 - **31.08.** ⚡ **Fällig-Liste** auf dem Dashboard: `ende:` eines nicht

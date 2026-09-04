@@ -59,6 +59,61 @@ wird der Titel aus dem Dateinamen abgeleitet). Erlaubt sind Task-Lists,
 Sind **mehrere** Dateien gepinnt, erscheinen sie dort als Tabs (Beschriftung =
 `title`); die zuletzt gewählte Datei merkt sich der Browser pro Projekt.
 
+### Termine & Wiedervorlagen (`typ: termine`)
+
+Eine `stand/`-Datei mit `typ: termine` im Frontmatter (typisch
+`stand/termine.md`, meist zusätzlich `pin: right`) ist die Wiedervorlage-Liste
+des Projekts – das Spiegelbild der Chronik nach vorn. Die Datei bleibt die
+Quelle der Wahrheit und darf **unsortiert** sein: Janus liest jeden
+Listeneintrag, erkennt die Datumsangabe am Zeilenanfang und sortiert selbst
+nach Aktualität (Überfällig / sofort · nächste 7 Tage · nächste 30 Tage ·
+weiter draußen). Empfohlene feste Struktur – bewusst **ohne** relative
+Überschriften wie „Nächste 30 Tage“, die still veralten:
+
+```markdown
+## Sofort                      # optional: undatierte Einträge hier gelten als *sofort*
+- **Lüfter Trockenraum**: Angebot liegt vor, Freigabe des Beirats abwarten.
+
+## Termine                     # alles Datierte, Reihenfolge egal, Neues oben
+- **04.09.2026** — Einzug Prüfrechnungen vom Mietkonto.
+- **06.09.2026 (So)** — Schlüsselübergabe (`geplant/schluessel`).
+- **~08.09.2026** — Entwürfe da? Sonst nachhaken.
+- **Oktober/November 2026** — Umlaufbeschluss durchführen.
+- **bis ~Ende Oktober 2026** — Bad beauftragen.
+- ~~**28.08.2026** — Formular abschicken~~ erledigt 27.08.
+
+## Ohne Datum (bei Gelegenheit)
+- Objekt-Stammdatenblatt anlegen.
+
+## Referenz-Fristen (Verträge)
+- **Verwaltervertrag:** kündbar mit 1 Monat zum Monatsende.
+```
+
+Überschriften zählen nur als Jahres-Kontext (`## September 2026`) bzw. als
+Dringlichkeits-Signal (enthält die Überschrift „sofort“ oder „überfällig“,
+gelten undatierte Einträge darunter als *sofort*).
+
+**Pflege-Regeln** (gehören so in die `AGENTS.md` des Projekts): Datum absolut
+und fett am Zeilenanfang; Erledigtes durchstreichen und mit „erledigt TT.MM.“
+versehen statt löschen (älter als 30 Tage darf raus – die Chronik hat es);
+zum Sessionstart das heutige Datum nennen und Überfälliges plus alles bis
+heute + 7 Tage aufzählen. Sortieren muss niemand.
+
+Erkannt werden: `04.09.2026`, `21.08.`, `06.09.2026 (So)`, `~08.09.2026` /
+`ca.` (circa), `Anfang|Mitte|Ende September`, `Oktober 2026`,
+`Oktober/November 2026`, `Okt–Dez 2026`, `KW 37`, `Q1 2027`,
+`Frühjahr|Sommer|Herbst|Winter 2027`, `2027` sowie die Präfixe `ab`, `bis`,
+`spätestens`. Fehlt das Jahr, gilt die Abschnittsüberschrift, sonst das
+laufende Jahr (liegt der Monat > 2 Monate zurück: das nächste). Durchgestrichene
+(`~~…~~`) oder mit ✓/„erledigt“ beginnende Einträge landen eingeklappt unter
+„Erledigt“; Einträge ohne erkennbares Datum bleiben unter ihrer Überschrift in
+Dateireihenfolge stehen. Beginnt so ein Eintrag trotzdem wie eine Datumsangabe
+(„nächste Woche“, „nach der ETV“, „in 3 Wochen“), zeigt die Ansicht den
+Hinweis **„Datum nicht erkannt“** – das Signal, die Angabe absolut zu schreiben.
+
+Datierte, nicht erledigte Einträge speisen zusätzlich die **Fällig-Liste** des
+Dashboards (zusammen mit `ende:` der Knoten).
+
 ## wissen/\*.md – die Wissensbasis (Wiki)
 
 Referenz-Seiten, die nicht mit dem Projektfortschritt veralten, sondern
@@ -133,8 +188,12 @@ ende: 2026-06-30                    # optional – fehlt = läuft bis heute
 
 ## abgeschlossen/\*.md – das Archiv
 
-Gleiches Format wie `geplant/`. Beendete Themen werden **von Hand** dorthin
-verschoben (die App verschiebt nichts, sie liest nur). Der Ordner darf fehlen.
+Gleiches Format wie `geplant/`. Beendete Themen wandern dorthin – entweder
+per Button **„✓ Abschließen"** in der Knoten-Ansicht (verschiebt die Datei,
+setzt `status: fertig` und `ende:` = heute, falls noch leer) oder von Hand
+(Datei verschieben, der Ordner darf fehlen). **„↩ Reaktivieren"** holt einen
+archivierten Knoten zurück nach `geplant/` (Status `in-arbeit`; `ende:`
+bleibt stehen und gilt damit wieder als Fälligkeit).
 
 - Archivierte Knoten erscheinen **nicht** im aktiven DAG, sondern in einer
   eingeklappten Sektion „Abgeschlossen (n)" darunter.

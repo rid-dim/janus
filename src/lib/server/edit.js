@@ -98,6 +98,31 @@ export function saveBody(projectId, rel, body) {
 	return { ok: true };
 }
 
+/** Lokales Heute als JJJJ-MM-TT. */
+function heute() {
+	const d = new Date();
+	return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+}
+
+/**
+ * YAML liest `start: 2026-08-30` als Date-Objekt; beim Zurückschreiben würde
+ * daraus `2026-08-30T00:00:00.000Z`. Datumsfelder deshalb vor dem Speichern
+ * wieder auf den reinen Tag (JJJJ-MM-TT) zurückführen.
+ */
+function normalizeDates(data) {
+	for (const key of ['start', 'ende', 'end', 'geprueft']) {
+		const v = data[key];
+		if (v instanceof Date && !Number.isNaN(v.getTime())) {
+			data[key] = [
+				v.getUTCFullYear(),
+				String(v.getUTCMonth() + 1).padStart(2, '0'),
+				String(v.getUTCDate()).padStart(2, '0')
+			].join('-');
+		}
+	}
+	return data;
+}
+
 /** Update a geplant node's frontmatter (title / status / depends_on). */
 export function updateNodeMeta(projectId, rel, patch = {}) {
 	const dir = projectDir(projectId);
@@ -133,8 +158,47 @@ export function updateNodeMeta(projectId, rel, patch = {}) {
 		if (!/^\d{4}-\d{2}-\d{2}$/.test(g)) return { ok: false, error: 'geprueft muss JJJJ-MM-TT sein' };
 		data.geprueft = g;
 	}
-	fs.writeFileSync(file, matter.stringify(parsed.content, data), 'utf8');
+	fs.writeFileSync(file, matter.stringify(parsed.content, normalizeDates(data)), 'utf8');
 	return { ok: true };
+}
+
+/**
+ * Einen Knoten zwischen `geplant/` (aktiver Graph) und `abgeschlossen/`
+ * (Archiv) verschieben – die Datei wandert samt Inhalt, nur das Frontmatter
+ * wird nachgezogen:
+ *   - ins Archiv:  `status: fertig`, `ende:` = heute (falls noch nicht gesetzt)
+ *   - zurück:      `status: in-arbeit` (falls fertig). `ende:` bleibt stehen –
+ *                  es kann ein vorher geplantes Enddatum sein, das nicht
+ *                  verloren gehen darf; als Fälligkeit ist es dann sichtbar.
+ * Abhängigkeiten anderer Knoten bleiben unangetastet (auf archivierte Knoten
+ * gelten sie als erfüllt, s. projects.js).
+ */
+export function moveNode(projectId, rel, ziel) {
+	if (ziel !== ARCHIVE_DIR && ziel !== 'geplant') return { ok: false, error: 'Ungültiges Ziel' };
+	const norm = String(rel || '').replace(/\\/g, '/');
+	const quelle = ziel === ARCHIVE_DIR ? 'geplant' : ARCHIVE_DIR;
+	if (!norm.startsWith(quelle + '/') || !norm.toLowerCase().endsWith('.md')) {
+		return { ok: false, error: 'Nur Knoten aus ' + quelle + '/ können nach ' + ziel + '/ verschoben werden' };
+	}
+	const dir = projectDir(projectId);
+	const von = resolveInDir(dir, rel);
+	if (!fs.existsSync(von)) return { ok: false, error: 'Datei nicht gefunden' };
+	const name = path.basename(von);
+	const nach = resolveInDir(dir, path.join(ziel, name));
+	if (fs.existsSync(nach)) return { ok: false, error: 'Im Ordner ' + ziel + '/ existiert bereits: ' + name };
+
+	const parsed = matter(fs.readFileSync(von, 'utf8'));
+	const data = normalizeDates({ ...parsed.data });
+	if (ziel === ARCHIVE_DIR) {
+		data.status = 'fertig';
+		if (!data.ende && !data.end) data.ende = heute();
+	} else {
+		if (!data.status || String(data.status).toLowerCase() === 'fertig') data.status = 'in-arbeit';
+	}
+	fs.mkdirSync(path.dirname(nach), { recursive: true });
+	fs.writeFileSync(nach, matter.stringify(parsed.content, data), 'utf8');
+	fs.unlinkSync(von);
+	return { ok: true, rel: path.join(ziel, name), id: data.id || name.replace(/\.md$/i, '') };
 }
 
 /**

@@ -12,8 +12,8 @@ verwaiste und abgestandene Seiten (`geprueft:`-Stempel). Und eine
 **Zeitleisten-Ansicht** (`/projekt/<id>/zeit`): ein Aktivitätsstreifen
 aus der Chronik (`stand/chronik.md`) und ein Themen-Gantt über die
 `geplant/`-Knoten (`start:`/`ende:` im Frontmatter), der Langläufer sichtbar
-macht. Beendete Themen wandern ins Archiv `abgeschlossen/` und bleiben dort
-(und im Gantt) nachvollziehbar. Details zum Dateiformat: [FORMAT.md](FORMAT.md).
+macht. Beendete Themen wandern per Button „✓ Abschließen" ins Archiv
+`abgeschlossen/` und bleiben dort (und im Gantt) nachvollziehbar. Details zum Dateiformat: [FORMAT.md](FORMAT.md).
 
 Der ganze Inhalt lebt als Markdown-Dateien auf der Platte – die App ist nur die
 Ansicht darauf. Dadurch ist alles exportierbar, git-fähig und direkt von
@@ -29,8 +29,10 @@ gepinnte Chronik:
 
 **Dashboard** — zentraler Store und verlinkte Repos nebeneinander, mit
 Fortschritt, globaler Wiki-Suche und einer **Fällig-Liste**: `ende:` eines
-nicht fertigen Knotens gilt als Fälligkeit, gezeigt werden Überfälliges und
-die nächsten 7 Tage (dringlichstes zuerst):
+nicht fertigen Knotens gilt als Fälligkeit, dazu kommen die datierten Einträge
+einer Termine-Datei (`stand/termine.md` mit `typ: termine` – Janus parst die
+Datumsangaben und sortiert selbst); gezeigt werden Überfälliges und die
+nächsten 7 Tage (dringlichstes zuerst):
 
 ![Dashboard mit Projektkarten](docs/screenshots/dashboard.png)
 

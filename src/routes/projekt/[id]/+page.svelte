@@ -5,6 +5,7 @@
 	import Dag from '$lib/components/Dag.svelte';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import NodeMeta from '$lib/components/NodeMeta.svelte';
+	import Termine from '$lib/components/Termine.svelte';
 	import { postJSON } from '$lib/client/api.js';
 
 	let { data } = $props();
@@ -201,6 +202,19 @@
 		if (!node) return;
 		const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(node.status) + 1) % STATUS_CYCLE.length];
 		run(() => postJSON('/api/node-meta', { projectId: p.id, rel: node.rel, patch: { status: next } }), 'Status: ' + next);
+	}
+	// Knoten ins Archiv (abgeschlossen/) verschieben bzw. von dort zurückholen.
+	// Der Knoten behält seine id, bleibt also ausgewählt; nach dem Archivieren
+	// klappt die Archiv-Sektion auf, damit man sieht, wo er gelandet ist.
+	function archiveNode(node) {
+		const offen = node.tasks.total - node.tasks.done;
+		if (offen > 0 && !confirm(`„${node.title}" hat noch ${offen} offene Checkpoint${offen === 1 ? '' : 's'}.\nTrotzdem abschließen und ins Archiv verschieben?`)) return;
+		run(() => postJSON('/api/move-node', { projectId: p.id, rel: node.rel, ziel: 'abgeschlossen' }), 'Ins Archiv verschoben').then(
+			(ok) => ok && (archivOffen = true)
+		);
+	}
+	function unarchiveNode(node) {
+		run(() => postJSON('/api/move-node', { projectId: p.id, rel: node.rel, ziel: 'geplant' }), 'Zurück in Geplant');
 	}
 	function saveSettings() {
 		const patch = {
@@ -434,12 +448,27 @@
 								{#if selectedNode.archiviert}
 									<span class="pill archiv-pill" title={selectedNode.rel}>archiviert</span>
 								{/if}
-								{#if editing}
-									<div class="toolbar">
+								<div class="toolbar">
+									{#if selectedNode.archiviert}
+										<button
+											class="btn small"
+											disabled={busy}
+											title="Zurück nach geplant/ verschieben (Status: in-arbeit)"
+											onclick={() => unarchiveNode(selectedNode)}
+										>↩ Reaktivieren</button>
+									{:else}
+										<button
+											class="btn small done"
+											disabled={busy}
+											title="Nach abgeschlossen/ verschieben (Status: fertig, ende: heute)"
+											onclick={() => archiveNode(selectedNode)}
+										>✓ Abschließen</button>
+									{/if}
+									{#if editing}
 										<button class="tb" title="Text bearbeiten" onclick={() => (bodyEditRel = bodyEditRel === selectedNode.rel ? null : selectedNode.rel)}>✎</button>
 										<button class="tb danger" title="Löschen" onclick={() => removeDoc(selectedNode.rel, selectedNode.title)}>🗑</button>
-									</div>
-								{/if}
+									{/if}
+								</div>
 							</div>
 							{#if editing}
 								{#key selectedNode.id}
@@ -534,6 +563,9 @@
 			{#key sec.rel}
 				<MarkdownEditor value={sec.body} {busy} onsave={(t) => saveBody(sec.rel, t)} oncancel={() => (bodyEditRel = null)} />
 			{/key}
+		{:else if sec.termine}
+			<!-- typ: termine – die App sortiert die Wiedervorlagen selbst nach Datum -->
+			<Termine termine={sec.termine} projectId={p.id} rel={sec.rel} />
 		{:else}
 			<Markdown html={sec.html} projectId={p.id} rel={sec.rel} />
 		{/if}
@@ -785,6 +817,16 @@
 	.btn:disabled {
 		opacity: 0.5;
 		cursor: default;
+	}
+	.btn.small {
+		height: 28px;
+		padding: 0 10px;
+		font-size: 12.5px;
+		white-space: nowrap;
+	}
+	.btn.done:hover {
+		border-color: var(--ok);
+		color: var(--ok);
 	}
 
 	/* settings panel */

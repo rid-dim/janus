@@ -159,10 +159,21 @@ export function resolveWikilink(kontext, target) {
 	return { href: `/projekt/${kontext.id}/wiki/${encSlug(target)}`, known: false };
 }
 
+/** Basis-URL der Asset-Route eines Projekts (Bilder aus dem Projektordner). */
+export function assetBase(id) {
+	return `/projekt/${encodeURIComponent(id)}/asset/`;
+}
+
 /** Wikilink-Render-Env für ein Projekt (löst [[...]] lokal + über Hubs auf). */
 export function wikiEnv(entry, reg) {
 	const kontext = wikiKontext(entry, reg);
-	return { wiki: { resolve: (target) => resolveWikilink(kontext, target) }, kontext };
+	return {
+		wiki: { resolve: (target) => resolveWikilink(kontext, target) },
+		// Bildpfade in stand/geplant sind projektrelativ (dir = ''); im Wiki
+		// seitenrelativ – siehe wiki/[...slug]/+page.server.js.
+		assets: { base: assetBase(entry.id), dir: '' },
+		kontext
+	};
 }
 
 /** Absolute base directory (folder containing projekt.yaml) for a project id. */

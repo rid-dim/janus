@@ -230,6 +230,15 @@ Plotly-Figur (`{ "data": [...], "layout": {...} }`):
   (CommonMark): `[Doku](<doc:anhaenge/Mein Dokument.pdf>)` – ohne sie wird der
   Link gar nicht erst geparst.
 
+**Bilder** – normale Markdown-Bildsyntax; Dateien liegen im Projektordner
+(Konvention: `wissen/assets/…`) und werden über `/projekt/<id>/asset/<pfad>`
+ausgeliefert (nur Bildformate, Traversal wird geblockt):
+
+- in `wissen/`-Seiten **seitenrelativ**:
+  `![Grundriss](../assets/grundrisse/eg-links.png)` aus `wissen/wohnungen/`
+- in `stand/` und `geplant/` **projekt-relativ**: `![Plan](wissen/assets/x.png)`
+- absolute URLs (`https://…`, `data:`) bleiben unverändert
+
 **Checkpoints** – GitHub-Task-Lists `- [ ]` / `- [x]`. Abhaken in der UI
 schreibt genau diese eine Zeile zurück.
 

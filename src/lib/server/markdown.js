@@ -116,6 +116,44 @@ function wikilinkPlugin(md) {
 	};
 }
 
+/** "wissen/wohnungen" + "../assets/x.png" -> "wissen/assets/x.png" (ohne ./ und ../) */
+function joinRel(dir, rel) {
+	const teile = [];
+	for (const s of (dir ? dir + '/' + rel : rel).split('/')) {
+		if (!s || s === '.') continue;
+		if (s === '..') teile.pop();
+		else teile.push(s);
+	}
+	return teile.join('/');
+}
+
+function imagePlugin(md) {
+	const defaultImage = md.renderer.rules.image;
+
+	md.renderer.rules.image = (tokens, idx, options, env, self) => {
+		const token = tokens[idx];
+		const i = token.attrIndex('src');
+		const base = env?.assets?.base;
+		if (i >= 0 && base) {
+			const src = token.attrs[i][1];
+			// Nur projektinterne, relative Pfade umschreiben – externe URLs
+			// (http:, data:, …) und absolute Pfade bleiben unangetastet.
+			if (!/^[a-z][a-z0-9+.-]*:/i.test(src) && !src.startsWith('/')) {
+				// markdown-it hat den src prozentkodiert; für den Dateipfad wieder
+				// dekodieren und segmentweise neu kodieren (der Traversal-Guard der
+				// Asset-Route greift ohnehin auf dem dekodierten Pfad).
+				const rel = joinRel(env.assets.dir || '', md.utils.lib.mdurl.decode(src));
+				token.attrs[i][1] = base + rel.split('/').map(encodeURIComponent).join('/');
+				token.attrJoin('class', 'janus-bild');
+				token.attrSet('loading', 'lazy');
+			}
+		}
+		return defaultImage
+			? defaultImage(tokens, idx, options, env, self)
+			: self.renderToken(tokens, idx, options);
+	};
+}
+
 function linkPlugin(md) {
 	const defaultOpen =
 		md.renderer.rules.link_open ||
@@ -166,6 +204,7 @@ export function createMarkdown() {
 	taskListPlugin(md);
 	fencePlugin(md);
 	wikilinkPlugin(md);
+	imagePlugin(md);
 	linkPlugin(md);
 	return md;
 }
@@ -175,7 +214,9 @@ const shared = createMarkdown();
 /**
  * Render a markdown string to HTML using the shared Janus renderer.
  * Optional env: { wiki: { slugs: Set<string>, base: string } } löst
- * [[wikilinks]] gegen die wissen/-Seiten eines Projekts auf.
+ * [[wikilinks]] gegen die wissen/-Seiten eines Projekts auf;
+ * { assets: { base: string, dir?: string } } macht ![](…)-Bilder zu URLs der
+ * Asset-Route (dir = Ordner der Quelldatei, gegen den relativ aufgelöst wird).
  */
 export function renderMarkdown(src, env = {}) {
 	return shared.render(src || '', env);

@@ -1,5 +1,11 @@
 import { error } from '@sveltejs/kit';
-import { projectEntry, registry, wikiKontext, resolveWikilink } from '$lib/server/projects.js';
+import {
+	projectEntry,
+	registry,
+	wikiKontext,
+	resolveWikilink,
+	assetBase
+} from '$lib/server/projects.js';
 import { renderMarkdown } from '$lib/server/markdown.js';
 import {
 	loadWissen,
@@ -72,7 +78,12 @@ export function load({ params, url }) {
 				title: page.title,
 				geprueft: page.geprueft,
 				body: page.body,
-				html: renderMarkdown(page.body, env),
+				// ![](…) in Wiki-Seiten wird relativ zur Seite aufgelöst
+				// (z. B. "../assets/grundrisse/eg-links.png" aus wissen/wohnungen/).
+				html: renderMarkdown(page.body, {
+					...env,
+					assets: { base: assetBase(entry.id), dir: page.rel.split('/').slice(0, -1).join('/') }
+				}),
 				backlinks: [
 					...(eingehend.get(page.slug) || []).filter(
 						(q) => !(q.wo === 'wissen' && q.von === page.slug)

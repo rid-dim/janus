@@ -102,9 +102,13 @@ export function loadWissen(projectDir) {
  */
 export function linkkarte(projectDir, pages) {
 	const eingehend = new Map(); // slug -> [quelle]
+	// Eine Datei, die dieselbe Seite mehrfach verlinkt, ist EINE Quelle – sonst
+	// gäbe es doppelte Backlinks (und doppelte Keys in der Wiki-Ansicht).
 	const addLink = (ziel, quelle) => {
 		if (!eingehend.has(ziel)) eingehend.set(ziel, []);
-		eingehend.get(ziel).push(quelle);
+		const list = eingehend.get(ziel);
+		if (list.some((q) => q.wo === quelle.wo && q.von === quelle.von)) return;
+		list.push(quelle);
 	};
 	for (const p of pages) {
 		for (const ziel of p.links) {

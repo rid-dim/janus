@@ -106,8 +106,9 @@ Beide Wege laufen nebeneinander. Verlinkte Repos stehen in `janus.config.json`:
 
 `projectDir` (Standard `.janus`) ist der Unterordnername fürs In-Repo-Tracking.
 `hidden` blendet Projekte **nur lokal** aus (die Config ist gitignoriert):
-sie verschwinden aus Dashboard, Projektliste und Termin-Aggregation, bleiben
-aber per Direkt-URL erreichbar und als Wissens-Hub referenzierbar — die
+sie verschwinden aus Dashboard, Projekt-Seitenleiste und Termin-Aggregation,
+bleiben aber per Direkt-URL erreichbar (dann in der Seitenleiste als
+„ausgeblendet" markiert) und als Wissens-Hub referenzierbar — die
 Projektdaten selbst (z. B. ein im Repo getrackter Masterstand) bleiben
 unangetastet und werden normal weitergepflegt.
 Janus committet nie selbst – es schreibt nur die Dateien; committen/pushen macht

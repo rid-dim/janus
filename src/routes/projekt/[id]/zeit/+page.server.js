@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getProject, registry } from '$lib/server/projects.js';
+import { getProject, sidebarProjects } from '$lib/server/projects.js';
 import { parseChronik } from '$lib/server/chronik.js';
 import { tageZwischen, minIso, maxIso } from '$lib/zeit.js';
 
@@ -88,9 +88,7 @@ export function load({ params }) {
 			location: project.location,
 			source: project.source
 		},
-		projects: registry()
-			.map((e) => ({ id: e.id, titel: e.manifest.titel, status: e.manifest.status }))
-			.sort((a, b) => a.titel.localeCompare(b.titel, 'de')),
+		projects: sidebarProjects(project.id),
 		heute,
 		von,
 		bis,

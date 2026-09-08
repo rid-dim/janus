@@ -281,6 +281,19 @@ export function collectDeadlines(tage = 7) {
 	return out;
 }
 
+/**
+ * Schlanke Projektliste für die Seitenleiste der Projektansichten.
+ * Lokal ausgeblendete Projekte fehlen – außer dem gerade geöffneten
+ * (per Direkt-URL erreichbar), das als `hidden` markiert wird.
+ */
+export function sidebarProjects(currentId, reg = registry()) {
+	const hidden = new Set(hiddenProjectIds());
+	return reg
+		.filter((e) => e.id === currentId || !hidden.has(e.id))
+		.map((e) => ({ id: e.id, titel: e.manifest.titel, status: e.manifest.status, hidden: hidden.has(e.id) }))
+		.sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
+}
+
 /** Lightweight summaries for the dashboard. */
 export function listProjects() {
 	const hidden = new Set(hiddenProjectIds());

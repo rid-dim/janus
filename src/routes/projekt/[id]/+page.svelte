@@ -308,8 +308,8 @@
 		{#if !sidebarCollapsed}
 			<nav class="sidebar-nav">
 				{#each projects as pr (pr.id)}
-					<a class="side-item" class:active={pr.id === p.id} href="/projekt/{pr.id}" title={pr.titel}>
-						<span class="side-name">{pr.titel}</span>
+					<a class="side-item" class:active={pr.id === p.id} href="/projekt/{pr.id}" title={pr.hidden ? pr.titel + ' (lokal ausgeblendet)' : pr.titel}>
+						<span class="side-name">{pr.titel}{#if pr.hidden}<span class="side-hidden" aria-label="lokal ausgeblendet">·&nbsp;ausgeblendet</span>{/if}</span>
 						<span class="dot status-{(pr.status || '').replace(/\s+/g, '-')}" title={pr.status}></span>
 					</a>
 				{/each}
@@ -737,6 +737,12 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	.side-hidden {
+		margin-left: 6px;
+		font-size: 11px;
+		color: var(--text-dim);
+		font-style: italic;
 	}
 	.dot {
 		flex: 0 0 auto;

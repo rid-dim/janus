@@ -26,11 +26,25 @@
 		applyTheme(theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system');
 	}
 
+	// Unerwartete Client-Fehler (z. B. ein Render-Fehler beim Seitenwechsel) laufen
+	// an SvelteKits Fehlerbehandlung vorbei: die URL wechselt, die alte Ansicht
+	// bleibt stehen, und ohne Konsole sieht niemand, warum. Deshalb ein Banner.
+	let clientFehler = $state(null);
+
+	function meldeFehler(e) {
+		const err = e?.reason ?? e?.error ?? e;
+		const text = String(err?.message ?? err ?? 'Unbekannter Fehler').split('\n')[0];
+		if (/ResizeObserver loop/.test(text)) return; // harmloses Browser-Rauschen
+		clientFehler = { text, url: location.pathname };
+	}
+
 	// The app is only a view on the files; external changes (a deleted/added
 	// project folder, an agent editing markdown) aren't pushed. Re-read from disk
 	// whenever the tab regains focus/visibility – no watcher, no polling.
 	onMount(() => {
 		theme = document.documentElement.dataset.theme || 'system';
+		window.addEventListener('error', meldeFehler);
+		window.addEventListener('unhandledrejection', meldeFehler);
 
 		let last = 0;
 		const refresh = () => {
@@ -47,6 +61,8 @@
 		return () => {
 			window.removeEventListener('focus', refresh);
 			document.removeEventListener('visibilitychange', onVisible);
+			window.removeEventListener('error', meldeFehler);
+			window.removeEventListener('unhandledrejection', meldeFehler);
 		};
 	});
 </script>
@@ -117,4 +133,82 @@
 	</button>
 </div>
 
+{#if clientFehler}
+	<div class="janus-clientfehler" role="alert">
+		<div class="janus-clientfehler-text">
+			<strong>Die Ansicht konnte nicht aufgebaut werden.</strong>
+			<code>{clientFehler.text}</code>
+			<span class="dim">Die Seite ist vermutlich unvollständig oder veraltet – neu laden hilft meist. Bleibt der Fehler, steckt er in den Projektdaten oder in Janus selbst (Details in der Browser-Konsole).</span>
+		</div>
+		<div class="janus-clientfehler-actions">
+			<button onclick={() => location.reload()}>Neu laden</button>
+			<a href="/">Zur Übersicht</a>
+			<button class="ghost" onclick={() => (clientFehler = null)} aria-label="Meldung schließen">✕</button>
+		</div>
+	</div>
+{/if}
+
 {@render children()}
+
+<style>
+	.janus-clientfehler {
+		position: sticky;
+		top: var(--topbar-h);
+		z-index: 19;
+		display: flex;
+		gap: 16px;
+		align-items: center;
+		justify-content: space-between;
+		padding: 10px 22px;
+		background: #fff3e6;
+		border-bottom: 1px solid #f0b27a;
+		color: #5a3410;
+		font-size: 13px;
+	}
+	:global(html[data-theme='dark']) .janus-clientfehler {
+		background: #3a2a18;
+		border-color: #8a5a2a;
+		color: #ffd9b3;
+	}
+	@media (prefers-color-scheme: dark) {
+		:global(html:not([data-theme='light'])) .janus-clientfehler {
+			background: #3a2a18;
+			border-color: #8a5a2a;
+			color: #ffd9b3;
+		}
+	}
+	.janus-clientfehler-text {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 10px;
+		align-items: baseline;
+		min-width: 0;
+	}
+	.janus-clientfehler code {
+		font-size: 12px;
+		word-break: break-word;
+	}
+	.janus-clientfehler .dim {
+		opacity: 0.8;
+	}
+	.janus-clientfehler-actions {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		flex: 0 0 auto;
+	}
+	.janus-clientfehler button,
+	.janus-clientfehler a {
+		font: inherit;
+		color: inherit;
+		border: 1px solid currentColor;
+		border-radius: 8px;
+		background: transparent;
+		padding: 4px 10px;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	.janus-clientfehler button.ghost {
+		border-color: transparent;
+	}
+</style>

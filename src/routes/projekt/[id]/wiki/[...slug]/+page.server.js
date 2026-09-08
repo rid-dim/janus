@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import {
 	projectEntry,
 	registry,
+	sidebarProjects,
 	wikiKontext,
 	resolveWikilink,
 	assetBase
@@ -111,9 +112,7 @@ export function load({ params, url }) {
 	const basisPflege = pflege(pages, eingehend, heute, ABGESTANDEN_TAGE);
 	basisPflege.rot = basisPflege.rot.filter((r) => !resolveWikilink(kontext, r.slug).known);
 
-	const projects = reg
-		.map((e) => ({ id: e.id, titel: e.manifest.titel, status: e.manifest.status }))
-		.sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
+	const projects = sidebarProjects(entry.id, reg);
 
 	const q = url.searchParams.get('q') || '';
 

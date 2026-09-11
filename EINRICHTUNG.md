@@ -75,7 +75,7 @@ Maschine). Vorhandene Einstellungen **nicht** ersetzen, nur `hooks` ergänzen:
     "PreToolUse":       [{ "hooks": [{ "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 }] }],
     "Stop": [{ "hooks": [
       { "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 },
-      { "type": "command", "command": "node /home/DU/.janus/hooks/minion.mjs", "asyncRewake": true, "timeout": 580 }
+      { "type": "command", "command": "node /home/DU/.janus/hooks/minion.mjs", "asyncRewake": true, "timeout": 86400 }
     ] }],
     "StopFailure":      [{ "hooks": [{ "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 }] }],
     "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 }] }],
@@ -99,23 +99,18 @@ Drei Dinge, die dabei zählen:
 
       timeout  >  JANUS_MINION_MINUTEN × 60  (mit etwas Luft)
 
-  Für die Vorgabe von 240 Minuten also mindestens 14700 s; für ein Budget von
-  5 Minuten reichen 330 s. Der Minion liest den Wert inzwischen selbst aus
-  `settings.json` und deckelt sich entsprechend – wer die Zahlen falsch setzt,
-  bekommt einen kürzeren Kanal, aber keinen von außen abgeschnittenen Prozess.
-  Ohne gefundenen Eintrag gilt die Vorgabe von Claude Code (600 s).
+  Für die Vorgabe von 1440 Minuten (ein Tag) also `timeout: 86400`. Der Minion
+  liest den Wert selbst aus `settings.json` und deckelt sich entsprechend – wer
+  die Zahlen falsch setzt, bekommt einen kürzeren Kanal, aber keinen von außen
+  abgeschnittenen Prozess. Ohne gefundenen Eintrag gilt die Vorgabe von Claude
+  Code (600 s).
 
-  Die 600 sind ein **Vorgabewert, keine Obergrenze** – laut Doku ist ein höherer
-  `timeout` zulässig, eine Decke ist nur für `SessionEnd` beschrieben (60 s).
-  **Erprobt ist das nicht.** Ob Claude Code einen Wert von mehreren Stunden
-  tatsächlich durchlässt, hat hier niemand gemessen; ein stillschweigend
-  gedeckelter Timeout würde den Poller abschießen, statt ihn sauber enden zu
-  lassen – genau das, was der Selbst-Deckel verhindern soll.
-
-  Empfohlen ist deshalb **`timeout: 580`**, sicher unter der dokumentierten
-  Vorgabe. Das ergibt rund neun Minuten Kanal – für einen Menschen am
-  Schreibtisch eine andere Größenordnung als anderthalb. Wer mehr will, misst
-  vorher nach, wie lange ein Hook-Prozess tatsächlich überlebt.
+  Die 600 sind ein **Vorgabewert, keine Obergrenze**. Gemessen am 2026-09-11
+  auf macOS mit `timeout: 86400`: ein Minion lief 1200 s (Ende der Messreihe,
+  nicht des Prozesses), ein zweiter 720 s bis zur nächsten Zustellung, die ihn
+  planmäßig mit `exit 2` beendete. Claude Code kappt also nicht bei 600 s.
+  Eine frühere Fassung dieser Anleitung empfahl vorsichtshalber 580 – das
+  ergab nur neun Minuten Kanal und ist überholt.
   Wichtig ist die Unterscheidung zwischen den beiden Hintergrund-Schaltern:
   einen Hook mit `async: true` beendet Claude Code beim Timeout **nicht**, einen
   mit `asyncRewake: true` **schon**. Der Minion braucht `asyncRewake` (nur das
@@ -237,7 +232,7 @@ Absicht.
 | `JANUS_PRAESENZ_DIR` | `~/.janus/agenten` | Ablage der Präsenzdateien |
 | `JANUS_KANAL_DIR` | `~/.janus/kanal` | Ablage des Kanals |
 | `JANUS_TTL_MINUTEN` | `120` | wann Kanalinhalte verfallen |
-| `JANUS_MINION_MINUTEN` | `240` | gewünschte Offenhaltezeit – wirksam nur bis zum Hook-`timeout` |
+| `JANUS_MINION_MINUTEN` | `1440` | gewünschte Offenhaltezeit – wirksam nur bis zum Hook-`timeout` |
 | `JANUS_POLL_SEKUNDEN` | `45` | Dauer eines einzelnen Long-Polls |
 
 **Wie lange bleibt der Kanal offen?** Der Minion startet am Turn-Ende und pollt
@@ -247,8 +242,10 @@ also länger als das Budget nicht hinschaut, bekommt eine Nachricht erst beim
 nächsten eigenen Anstoß.
 
 Das Budget ist ein *Wunsch*; wirksam wird es nur bis zum Hook-`timeout`. Mit der
-empfohlenen Einstellung `timeout: 580` bleibt der Kanal rund neun Minuten offen,
-unabhängig davon, was im Budget steht.
+empfohlenen Einstellung `timeout: 86400` und der Vorgabe von 1440 Minuten bleibt
+der Kanal einen Tag offen – praktisch also bis zum Session-Ende, denn der
+`SessionEnd`-Hook löscht den Präsenzeintrag und der Minion beendet sich daraufhin
+von selbst.
 
 Ein *kleines* Budget klingt nach Rücksicht auf einen Arbeitsrechner, hebt den
 Zweck aber auf: bei fünf Minuten ist die Session nach fünf Minuten taub, und

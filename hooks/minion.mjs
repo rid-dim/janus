@@ -10,7 +10,7 @@
  *
  *   "Stop": [{ "hooks": [{ "type": "command",
  *     "command": "node /home/<du>/.janus/hooks/minion.mjs",
- *     "asyncRewake": true, "timeout": 14700 }] }]
+ *     "asyncRewake": true, "timeout": 86400 }] }]
  *
  * **Der `timeout` deckelt die Lebensdauer, nicht `JANUS_MINION_MINUTEN`.**
  * Ein Hook mit `async: true` ist von der Timeout-Durchsetzung ausgenommen, einer
@@ -32,7 +32,7 @@
  * Kanal nur für seine Dauer offen. Danach wäre die Session taub, bis sie von
  * sich aus wieder einen Turn beendet – ausgerechnet im Hauptfall, dass jemand
  * schreibt, während gerade niemand hinschaut. Deshalb pollt der Minion bis zum
- * Zeitbudget (Vorgabe 30 min) weiter.
+ * Zeitbudget (Vorgabe 1440 min, also ein Tag) weiter.
  *
  * Ein Schloss verhindert, dass sich Poller stapeln: feuert `Stop` erneut,
  * während schon einer läuft, beendet sich der neue sofort.
@@ -182,7 +182,7 @@ try {
 		return 600;
 	}
 
-	const gewuenscht = Number(process.env.JANUS_MINION_MINUTEN || 240) * 60;
+	const gewuenscht = Number(process.env.JANUS_MINION_MINUTEN || 1440) * 60;
 	// 20 s Luft, damit die Schleife von innen endet und ihr Schloss aufraeumt.
 	const erlaubt = Math.max(sek + 5, deckelSekunden() - 20);
 	const budgetBis = Date.now() + Math.min(gewuenscht, erlaubt) * 1000;

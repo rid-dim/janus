@@ -72,6 +72,7 @@ Maschine). Vorhandene Einstellungen **nicht** ersetzen, nur `hooks` ergänzen:
   "hooks": {
     "SessionStart":     [{ "hooks": [{ "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 }] }],
     "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 }] }],
+    "PreToolUse":       [{ "hooks": [{ "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 }] }],
     "Stop": [{ "hooks": [
       { "type": "command", "command": "node /home/DU/.janus/hooks/praesenz.mjs", "async": true, "timeout": 10 },
       { "type": "command", "command": "node /home/DU/.janus/hooks/minion.mjs", "asyncRewake": true, "timeout": 580 }
@@ -133,6 +134,13 @@ es nicht gibt. Das ist in der Praxis bestätigt, nicht vermutet.
 
 Der `UserPromptSubmit`-Hook ist nicht optional: ohne ihn bleibt eine Session
 nach ihrem ersten `Stop` für immer als „idle" stehen, auch mitten in der Arbeit.
+
+`PreToolUse` schließt die verbleibende Lücke: nicht jeder Turn beginnt mit
+einer Eingabe. Die Rückmeldung eines Hintergrund-Subagenten, eine
+Kanal-Zustellung oder eine Cross-Session-Nachricht starten Arbeit ohne
+`UserPromptSubmit` – die Session stünde dann auf „idle", während sie Werkzeuge
+ruft. Der Hook feuert bei jedem Werkzeugaufruf, schreibt aber nur, wenn der
+Zustand nicht ohnehin „arbeitet" ist; `seit` bleibt dabei stehen.
 
 ### Windows
 
@@ -287,7 +295,7 @@ zugeordnet wird erst beim Abholen.
 | keine Datei in `~/.janus/agenten/` | Hook nicht eingetragen, oder Pfad nicht absolut |
 | Session da, aber „kein Projekt" | `cwd` liegt außerhalb aller Projekte, oder Pfadschreibweise passt nicht – siehe `pfadabbildung` |
 | Eintrag „Payload unlesbar" | ein Payload wurde durch eine Shell gereicht; Backslashes überleben das nicht |
-| Session bleibt „idle" beim Arbeiten | `UserPromptSubmit`-Hook fehlt |
+| Session bleibt „idle" beim Arbeiten | `UserPromptSubmit`-Hook fehlt; bleibt sie es nur nach Subagenten oder Kanal-Zustellung, fehlt `PreToolUse` |
 | Kanal stellt nichts zu | Minion nicht eingetragen, oder sein `timeout` ist kleiner als sein Budget |
 
 ---

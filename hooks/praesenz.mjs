@@ -62,6 +62,13 @@ function statusAus(event, notificationType) {
 			// Ohne dieses Ereignis bliebe eine Session nach dem ersten `Stop`
 			// für immer "idle" – auch mitten in der Arbeit.
 			return 'arbeitet';
+		case 'PreToolUse':
+			// Nicht jeder Turn beginnt mit einer Eingabe: die Rückmeldung eines
+			// Hintergrund-Subagenten, eine Kanal-Zustellung oder eine
+			// Cross-Session-Nachricht starten die Arbeit ohne UserPromptSubmit.
+			// Dann stünde die Session auf "idle", während sie Werkzeuge ruft.
+			// Ein Werkzeugaufruf ist der sicherste Beleg für Arbeit.
+			return 'arbeitet';
 		case 'Stop':
 			return 'idle';
 		case 'StopFailure':
@@ -163,6 +170,11 @@ try {
 		fs.rmSync(ziel, { force: true });
 		raus();
 	}
+
+	// PreToolUse feuert bei jedem Werkzeugaufruf. Steht die Session schon auf
+	// "arbeitet", gibt es nichts zu melden – sonst schriebe jeder Aufruf eine
+	// Datei und setzte `seit` zurück.
+	if (p.hook_event_name === 'PreToolUse' && bisher.status === 'arbeitet') raus();
 
 	fs.mkdirSync(DIR, { recursive: true });
 

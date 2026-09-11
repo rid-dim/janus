@@ -34,6 +34,10 @@ als Dateien – die Janus-App zeigt Änderungen beim nächsten Laden an.
 - \`geplant/*.md\` – ein DAG-Knoten pro Datei. Frontmatter: \`id\`, \`title\`,
   \`status\` (offen | in-arbeit | fertig), \`depends_on: [id, ...]\`, optional
   \`start:\` / \`ende:\` (JJJJ-MM-TT – speist den Themen-Gantt der Zeitleiste).
+  \`pruefen: JJJJ-MM-TT\` ersetzt \`ende:\` als Fälligkeit – für Knoten, die
+  über ihr Arbeitsende hinaus laufen (Beobachtung), aber erst später zu
+  prüfen sind. Ohne das steht so ein Knoten täglich fällig, obwohl nichts
+  anliegt – und man gewöhnt sich ab, auf die Liste zu schauen.
   Body: \`## Checkpoints\` mit \`- [ ]\` / \`- [x]\`.
 - \`wissen/*.md\` – Wissensbasis/Wiki (Referenz, veraltet nicht mit dem
   Projekt). Slug = Pfad ohne .md, Unterordner erlaubt. Verlinken mit
@@ -55,6 +59,26 @@ als Dateien – die Janus-App zeigt Änderungen beim nächsten Laden an.
   (älter als 30 Tage darf raus). **Sessionstart:** heutiges Datum nennen,
   dann Überfälliges und alles bis heute + 7 Tage aus dieser Datei aufzählen.
 - \`anhaenge/\` – lokaler Document Store.
+- **Warten sichtbar machen** – hängt ein Checkpoint nicht an Arbeit, sondern an
+  etwas außerhalb, markiere genau *diese Zeile*:
+  \`@wartet(<kategorie> seit:<JJJJ-MM-TT> [nach:<n>d|nie])\`, Kategorie eine von
+  \`entscheidung\` | \`fremdstelle\` | \`kollege\` | \`zugang\`.
+  **\`seit:\` ist das Datum des *Fragens*, nicht des Bemerkens** – wer den Marker
+  setzt, behauptet, die Bitte ist raus. Ein Checkpoint „bei X anfragen" ohne
+  Marker ist kein Warten, sondern eine offene Aufgabe für uns. Nie am Knoten
+  markieren, immer an der Zeile; Warten auf einen anderen Knoten desselben
+  Projekts ist \`depends_on\`, nicht \`@wartet\`.
+- **Am Agenten-Board anmelden – einmal zu Sitzungsbeginn.** Der Präsenz-Hook
+  meldet Projekt und Zustand automatisch; deinen \`ListAgents\`-Namen kann er
+  nicht ermitteln, denn der stammt aus einem Werkzeugaufruf und steht in keinem
+  Hook-Payload. Ohne dich bleibt er also leer, und niemand kann dich per
+  \`SendMessage\` erreichen. Im Kanal bist du ohnehin unter deiner Projekt-ID
+  ansprechbar – die stimmt immer. Details: Läuft der
+  Präsenz-Hook, kennt das Board dein Projekt bereits. Damit dich andere Agenten
+  auch *ansprechen* können, trage deinen \`ListAgents\`-Namen nach — die erste
+  Zeile der \`ListAgents\`-Antwort nennt ihn:
+  \`echo '{}' | node ~/.janus/hooks/praesenz.mjs --name <dein-name>\`
+  Ohne das zeigt das Board dich an, rät die Adresse aber nur aus dem Ordnernamen.
 
 Fortschritt = Checkpoints abhaken, nicht Prosa umschreiben. Kleine, zeilengenaue
 Diffs bevorzugen. Charts: \`plotly\`-Block mit Plotly-JSON. Doc-Links:
@@ -75,7 +99,7 @@ export function scaffoldProject(dir, titel) {
 		path.join(dir, 'projekt.yaml'),
 		`schemaVersion: 1\n` +
 			`titel: ${name}\n` +
-			`status: in-arbeit\n` +
+			`status: aktiv\n` +
 			`beschreibung: ""\n` +
 			`tags: []\n` +
 			`stand_reihenfolge:\n  - 00-ueberblick\n`

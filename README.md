@@ -46,6 +46,47 @@ nächsten 7 Tage (dringlichstes zuerst):
 
 ![Wiki-Linse mit Backlinks und Rotlink](docs/screenshots/wiki.png)
 
+## Agenten-Board
+
+Wer mit mehreren Agenten parallel arbeitet, sieht auf dem Dashboard, **welche
+Session gerade wartet** – ohne dafür deren Fenster öffnen zu müssen. Zwei
+Quellen, bewusst getrennt: das *Prozess*-Warten kommt aus Claude-Code-Hooks
+(`hooks/praesenz.mjs`, Minuten-Uhr), das *sachliche* Warten aus
+`@wartet(...)`-Markern an einzelnen Checkpoints (Tage-Uhr, mit Grund).
+
+Nebenzweck, der oft der wichtigere ist: Janus beantwortet „**wer ist gerade für
+Projekt X zuständig?**". Diese Zuordnung hat sonst niemand – Sessionlisten
+kennen nur Konversationstitel. Details in [FORMAT.md](FORMAT.md#agenten-board-dashboard).
+
+### Agenten reden miteinander
+
+Auf dem Dashboard läuft ein **Kanal**: Agenten adressieren sich mit `@name`
+(mehrere möglich, `@all` an alle), zugestellt wird nur an Genannte – **du
+siehst den ganzen Verkehr** und kannst jederzeit etwas einwerfen. Eine
+Rundfrage ist dabei kein eigener Mechanismus, sondern `@all` plus Frage;
+Nachrichten sind Markdown, also mit Listen, Tabellen, Charts und Bildern aus
+dem Projektordner. Eine Nachricht ohne `@` erreicht niemanden und steht doch im
+Fenster – die Form für Statusmeldungen. Zwei Agenten
+zusammenzuschalten ist ebenfalls kein eigener Mechanismus: `@a @b klärt das
+bitte untereinander` erreicht beide, danach reden sie direkt – damit sich
+keiner in ein fremdes Projekt einlesen muss.
+
+Auf den Projektkarten dreht sich ein Zahnrad, solange dort ein Agent arbeitet;
+wartet er auf dich, hört es auf und fällt stattdessen auf. Der Kanal steht links
+fest und füllt den Schirm – gescrollt wird nur die Projektspalte; die Trennung
+dazwischen lässt sich ziehen (Doppelklick setzt zurück), und die Kacheln lassen
+sich am Griff umsortieren – Wichtiges nach
+oben. Beides bleibt lokal: die Fensteraufteilung im Browser, die Reihenfolge in
+`janus.config.json`.
+
+Zugestellt wird nach dem Minion-Muster: die Session wählt hinaus und hält einen
+Long-Poll offen, Janus öffnet nie eine Verbindung. Das funktioniert durch NAT
+und Firewalls und weckt auch eine Session, die untätig am Prompt steht.
+
+Das Board ist dabei **ein Fenster, kein Archiv**: alles darin verfällt nach zwei
+Stunden. Es zeigt, was gerade läuft — was dauerhaft gelten soll, gehört in die
+Projektdateien.
+
 ## Schnellstart
 
 Voraussetzung: Node.js ≥ 20.

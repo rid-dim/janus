@@ -158,14 +158,21 @@ a:hover {
 }
 
 .container {
-	max-width: 1180px;
+	/* Breite Schirme sollen genutzt werden – 1180px zwang zum Scrollen, obwohl
+	   Platz da war. Nach oben trotzdem gedeckelt, damit Fließtext lesbar bleibt;
+	   textlastige Abschnitte setzen sich zusätzlich ihr eigenes Maß. */
+	max-width: min(1720px, 100%);
 	margin: 0 auto;
-	padding: 26px 22px 60px;
+	padding: 26px 26px 60px;
 }
 
 /* --- status pills --- */
 .pill {
 	display: inline-block;
+	/* Eine Pille bricht nicht um. "in-arbeit" tat es an einer Silbe und hat
+	   damit den ganzen Kachelkopf auseinandergezogen – dass es jetzt "aktiv"
+	   heißt, behebt das nur zufällig. */
+	white-space: nowrap;
 	padding: 2px 9px;
 	border-radius: 999px;
 	font-size: 12px;
@@ -179,6 +186,14 @@ a:hover {
 	color: var(--future);
 	border-color: color-mix(in srgb, var(--future) 45%, var(--border));
 	background: color-mix(in srgb, var(--future) 12%, transparent);
+}
+/* Ruhendes Projekt: sichtbar, aber zurückgenommen – es soll nicht um
+   Aufmerksamkeit konkurrieren mit dem, was läuft. */
+.pill.status-inaktiv,
+.pill.status-ruht {
+	color: var(--text-dim);
+	border-color: var(--border);
+	background: transparent;
 }
 .pill.status-fertig,
 .pill.status-done,

@@ -20,6 +20,14 @@ export function writeConfig(cfg) {
 	fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, '\t') + '\n', 'utf8');
 }
 
+/** Anzeigename des Menschen im Kanal (janus.config.json "mensch": "…").
+ *  Rein kosmetisch – an ihn adressierte Nachrichten werden nie zugestellt.
+ *  Vorgabe „mensch", damit kein Klarname im Code steht. */
+export function menschName() {
+	const n = readConfig().mensch;
+	return typeof n === 'string' && n.trim() ? n.trim() : 'mensch';
+}
+
 /** Expand "~" and resolve relative paths against the app root. */
 export function expandPath(p) {
 	if (!p) return p;
@@ -51,6 +59,69 @@ export function prettyPath(p) {
 export function hiddenProjectIds() {
 	const list = readConfig().hidden;
 	return Array.isArray(list) ? list.map(String) : [];
+}
+
+/** Agenten-Board an/aus (janus.config.json "agentenBoard": false).
+ *
+ *  Ohne Claude-Code-Hooks gibt es nichts zu melden – wer mit einem anderen
+ *  Werkzeug arbeitet, soll kein totes Bedienfeld sehen. Vorgabe ist „an", das
+ *  Board blendet sich bei leerem Zustand ohnehin selbst aus; dieser Schalter
+ *  ist für den Fall, dass es dauerhaft weg sein soll. */
+export function agentenBoardAn() {
+	return readConfig().agentenBoard !== false;
+}
+
+/** Abbildung fremder Pfadwurzeln auf lokale (janus.config.json
+ *  "pfadabbildung": { "C:\\": "/c/", "\\\\server\\share": "/mnt/share" }).
+ *
+ *  Wie ein Wirt fremde Laufwerke einhängt, weiß nur er – das ist Konfiguration,
+ *  keine Regel. Die eingebaute Normierung deckt den Normalfall (Laufwerks-
+ *  buchstabe, /mnt/) ab; hier steht, was darüber hinausgeht. */
+export function pfadAbbildung() {
+	const m = readConfig().pfadabbildung;
+	return m && typeof m === 'object' ? m : {};
+}
+
+/** Einmal vergebene Projektfarben (janus.config.json "farben": {id: ton}).
+ *  Automatisch gefüllt, nicht von Hand zu pflegen – festgehalten wird nur,
+ *  damit eine Farbe sich nicht ändert, wenn ein Projekt dazukommt. */
+export function projectColors() {
+	const f = readConfig().farben;
+	return f && typeof f === 'object' ? f : {};
+}
+
+/** Neu vergebene Farben ergänzen (bestehende bleiben unangetastet). */
+export function mergeProjectColors(neu) {
+	const cfg = readConfig();
+	const vorher = cfg.farben && typeof cfg.farben === 'object' ? cfg.farben : {};
+	let geaendert = false;
+	for (const [id, ton] of Object.entries(neu)) {
+		if (vorher[id] !== ton) {
+			vorher[id] = ton;
+			geaendert = true;
+		}
+	}
+	if (geaendert) {
+		cfg.farben = vorher;
+		writeConfig(cfg);
+	}
+	return vorher;
+}
+
+/** Eigene Reihenfolge der Projekte (janus.config.json "reihenfolge": ["id", ...]).
+ *  Wie `hidden` rein lokal: die Config ist gitignoriert. Wichtiges nach oben,
+ *  Unwichtiges nach unten – nicht genannte Projekte hängen hinten an. */
+export function projectOrder() {
+	const list = readConfig().reihenfolge;
+	return Array.isArray(list) ? list.map(String) : [];
+}
+
+/** Reihenfolge speichern (nur bekannte IDs, ohne Dubletten). */
+export function setProjectOrder(ids) {
+	const cfg = readConfig();
+	cfg.reihenfolge = [...new Set((Array.isArray(ids) ? ids : []).map(String))];
+	writeConfig(cfg);
+	return cfg.reihenfolge;
 }
 
 /** Absolute paths of linked repos (each holds its Janus data in projectSubdir()). */

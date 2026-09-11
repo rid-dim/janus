@@ -12,3 +12,7 @@ node_modules
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .DS_Store
+
+# Release-Pakete: enthalten ein Bundle des Repos selbst
+/new_janus_release_with_comm_channels/
+/upgrade_0911/

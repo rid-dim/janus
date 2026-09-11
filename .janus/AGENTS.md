@@ -25,6 +25,15 @@ als Dateien – die Janus-App zeigt Änderungen beim nächsten Laden an.
   (älter als 30 Tage darf raus). **Sessionstart:** heutiges Datum nennen,
   dann Überfälliges und alles bis heute + 7 Tage aus dieser Datei aufzählen.
 - `anhaenge/` – lokaler Document Store.
+- **Warten sichtbar machen** – hängt ein Checkpoint nicht an Arbeit, sondern an
+  etwas außerhalb, markiere genau *diese Zeile*:
+  `@wartet(<kategorie> seit:<JJJJ-MM-TT> [nach:<n>d|nie])`, Kategorie eine von
+  `entscheidung` | `fremdstelle` | `kollege` | `zugang`.
+  **`seit:` ist das Datum des *Fragens*, nicht des Bemerkens** – wer den Marker
+  setzt, behauptet, die Bitte ist raus. Ein Checkpoint „bei X anfragen" ohne
+  Marker ist kein Warten, sondern eine offene Aufgabe für uns. Nie am Knoten
+  markieren, immer an der Zeile; Warten auf einen anderen Knoten desselben
+  Projekts ist `depends_on`, nicht `@wartet`.
 
 Fortschritt = Checkpoints abhaken, nicht Prosa umschreiben. Kleine, zeilengenaue
 Diffs bevorzugen. Charts: `plotly`-Block mit Plotly-JSON. Doc-Links:

@@ -3,10 +3,11 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
 import dagre from '@dagrejs/dagre';
-import { dataRoot, projectSubdir, linkedProjectPaths, prettyPath, hiddenProjectIds } from './config.js';
+import { dataRoot, projectSubdir, linkedProjectPaths, prettyPath, hiddenProjectIds, projectOrder, projectColors, mergeProjectColors } from './config.js';
 import { renderMarkdown, countTasks } from './markdown.js';
 import { wikiSlugs } from './wissen.js';
 import { parseTermine, heuteStr, tageZwischen } from './termine.js';
+import { verteileFarben } from './farben.js';
 
 function readIfExists(p) {
 	try {
@@ -31,6 +32,24 @@ function isProjectDir(dir) {
 	return fs.existsSync(path.join(dir, 'projekt.yaml'));
 }
 
+/**
+ * Projektstatus vereinheitlichen: `aktiv` | `inaktiv` | `fertig`.
+ *
+ * "in-arbeit" war als Projektstatus schief – es beschreibt einen Knoten, der
+ * gerade bearbeitet wird, nicht ein Projekt. Ein Projekt ist aktiv oder es
+ * ruht; ob gerade jemand daran arbeitet, sagt ohnehin das Zahnrad auf der
+ * Kachel. Alte Werte werden beim Lesen übersetzt, damit keine Datei angefasst
+ * werden muss; wer die Metadaten in der UI speichert, schreibt den neuen Wert.
+ */
+function normStatus(roh) {
+	const s = String(roh ?? '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+	if (!s) return 'aktiv';
+	if (['in-arbeit', 'in-bearbeitung', 'laufend', 'wip', 'active'].includes(s)) return 'aktiv';
+	if (['ruht', 'pausiert', 'inactive', 'on-hold', 'eingefroren'].includes(s)) return 'inaktiv';
+	if (['done', 'erledigt', 'abgeschlossen', 'finished'].includes(s)) return 'fertig';
+	return s;
+}
+
 function readManifest(projectDir, fallbackId) {
 	const raw = readIfExists(path.join(projectDir, 'projekt.yaml')) ?? '';
 	let data = {};
@@ -42,15 +61,28 @@ function readManifest(projectDir, fallbackId) {
 	return {
 		id: data.id || fallbackId,
 		titel: data.titel || fallbackId,
-		status: data.status || 'aktiv',
+		status: normStatus(data.status),
 		tags: Array.isArray(data.tags) ? data.tags : [],
 		beschreibung: data.beschreibung || '',
 		schemaVersion: data.schemaVersion ?? 1,
+		// Wunschfarbe aus projekt.yaml (Zahl oder Name); den endgültigen Ton
+		// vergibt registry(), damit sich zwei Projekte keine Farbe teilen.
+		farbe: data.farbe ?? null,
 		stand_reihenfolge: Array.isArray(data.stand_reihenfolge) ? data.stand_reihenfolge : null,
 		// Wissens-Hubs: Projekt-IDs, deren wissen/ hier read-only eingeblendet
 		// wird und gegen die [[wikilinks]] aufgelöst werden (nach lokal).
 		wissen_hubs: Array.isArray(data.wissen_hubs) ? data.wissen_hubs.map(String) : []
 	};
+}
+
+/** Wurde die Farbe in projekt.yaml gesetzt? Dann nicht in die Config merken. */
+function readManifestFarbe(projectDir) {
+	try {
+		const data = yaml.load(readIfExists(path.join(projectDir, 'projekt.yaml')) ?? '') || {};
+		return data.farbe ?? null;
+	} catch {
+		return null;
+	}
 }
 
 function shortHash(s) {
@@ -101,6 +133,24 @@ export function registry() {
 	for (const repoPath of linkedProjectPaths()) {
 		add(path.join(repoPath, sub), 'linked', path.basename(repoPath), repoPath);
 	}
+
+	// Farbtöne erst vergeben, wenn alle Projekte bekannt sind – nur dann lassen
+	// sich Kollisionen auflösen.
+	const gemerkt = projectColors();
+	const toene = verteileFarben(
+		items.map((e) => ({ id: e.id, farbe: e.manifest.farbe })),
+		gemerkt
+	);
+	for (const e of items) e.manifest.farbe = toene.get(e.id);
+
+	// Neu vergebene Töne festhalten, damit sie es auch morgen noch sind.
+	// Nur abgeleitete – was in projekt.yaml steht, gehört dorthin.
+	const zuMerken = {};
+	for (const e of items) {
+		const ausYaml = e.manifest.farbe !== undefined && readManifestFarbe(e.dir) !== null;
+		if (!ausYaml && gemerkt[e.id] !== e.manifest.farbe) zuMerken[e.id] = e.manifest.farbe;
+	}
+	if (Object.keys(zuMerken).length) mergeProjectColors(zuMerken);
 
 	return items;
 }
@@ -224,6 +274,11 @@ function termineMitHtml(body, env) {
 export function collectDeadlines(tage = 7) {
 	const heute = heuteStr();
 	const out = [];
+	// Noch nicht fällige Wiedervorlagen: gehören nicht in die Liste, sollen aber
+	// auffindbar bleiben. Ein Knoten, den man tagelang nirgends sieht, ist auch
+	// nicht korrigierbar – wer merkt, dass ein Prüftag schlecht liegt, muss ihn
+	// finden können, ohne jedes Projekt einzeln zu öffnen.
+	const spaeter = [];
 	const hidden = new Set(hiddenProjectIds());
 	for (const p of registry()) {
 		if (hidden.has(p.id)) continue;
@@ -232,18 +287,45 @@ export function collectDeadlines(tage = 7) {
 			const parsed = matter(readIfExists(path.join(dir, f)) ?? '');
 			const status = (parsed.data.status || 'offen').toLowerCase();
 			if (status === 'fertig') continue;
+
+			// `ende:` heißt "hier endet die Arbeit" – das ist nicht dasselbe wie
+			// "hier ist etwas fällig". Ein Knoten kann über sein Arbeitsende
+			// hinaus offen bleiben, ohne dass heute etwas zu tun wäre: eine
+			// Beobachtung läuft, geprüft wird später. `pruefen:` sagt genau das
+			// und ersetzt dann `ende:` als Fälligkeit.
+			const pruefen = toDateStr(parsed.data.pruefen ?? parsed.data.wiedervorlage);
 			const ende = toDateStr(parsed.data.ende ?? parsed.data.end);
-			if (!ende) continue;
-			const inTagen = tageZwischen(heute, ende);
+			const stichtag = pruefen ?? ende;
+			if (!stichtag) continue;
+			const inTagen = tageZwischen(heute, stichtag);
+
+			// Frist und Wiedervorlage brauchen verschiedene Vorlaufzeiten.
+			// Eine Frist (`ende:`) zeigt man früh, damit noch gehandelt werden
+			// kann. Eine Wiedervorlage (`pruefen:`) hat keinen Vorlauf: bis zu
+			// ihrem Tag gibt es nichts zu tun, und sie vorher anzuzeigen hieße,
+			// täglich an etwas zu erinnern, das niemand angehen kann.
+			if (pruefen && inTagen > 0) {
+				spaeter.push({
+					projektId: p.id,
+					projektTitel: p.manifest.titel,
+					knotenId: parsed.data.id || f.replace(/\.md$/i, ''),
+					titel: parsed.data.title || parsed.data.titel || titleFromFilename(f),
+					pruefen,
+					inTagen,
+					href: `/projekt/${p.id}?knoten=${encodeURIComponent(parsed.data.id || f.replace(/\.md$/i, ''))}`
+				});
+				continue;
+			}
 			if (inTagen > tage) continue;
 			const knotenId = parsed.data.id || f.replace(/\.md$/i, '');
 			out.push({
-				quelle: 'knoten',
+				quelle: pruefen ? 'pruefen' : 'knoten',
 				projektId: p.id,
 				projektTitel: p.manifest.titel,
 				knotenId,
 				titel: parsed.data.title || parsed.data.titel || titleFromFilename(f),
-				ende,
+				ende: stichtag,
+				arbeitsende: ende,
 				inTagen,
 				circa: false,
 				laufend: false,
@@ -278,6 +360,9 @@ export function collectDeadlines(tage = 7) {
 		}
 	}
 	out.sort((a, b) => a.inTagen - b.inTagen || a.titel.localeCompare(b.titel, 'de'));
+	spaeter.sort((a, b) => a.inTagen - b.inTagen || a.titel.localeCompare(b.titel, 'de'));
+	// Die Liste bleibt ein Array (wie bisher), trägt die Wiedervorlagen aber mit.
+	out.wiedervorlagen = spaeter;
 	return out;
 }
 
@@ -306,7 +391,16 @@ export function listProjects() {
 		location: p.source === 'linked' ? prettyPath(p.repoPath) : 'Zentraler Store',
 		...aggregateTasks(p.dir)
 	}));
-	projects.sort((a, b) => a.titel.localeCompare(b.titel, 'de'));
+	// Eigene Reihenfolge zuerst (Wichtiges oben), alles Übrige alphabetisch dahinter.
+	const rang = new Map(projectOrder().map((id, i) => [id, i]));
+	projects.sort((a, b) => {
+		const ra = rang.get(a.id);
+		const rb = rang.get(b.id);
+		if (ra !== undefined && rb !== undefined) return ra - rb;
+		if (ra !== undefined) return -1;
+		if (rb !== undefined) return 1;
+		return a.titel.localeCompare(b.titel, 'de');
+	});
 	return projects;
 }
 

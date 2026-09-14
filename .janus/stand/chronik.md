@@ -7,6 +7,21 @@ Kurzlog der Janus-Entwicklung (neueste zuerst). ⚖️ Entscheidung · ⚡ Meile
 
 ## September 2026
 
+- **11.09.** ⚡ **Hook-Timeout gemessen**: Claude Code kappt asyncRewake-Hooks
+  nicht bei 600 s – ein Minion lief unter `timeout: 86400` volle 1200 s, ein
+  zweiter 720 s bis zur nächsten Zustellung. ⚖️ Kanal bleibt damit einen Tag
+  offen statt neun Minuten; die Vorsichtsempfehlung 580 ist gestrichen.
+  Verworfen: Hooks, die sich nach Ablauf selbst neu einplanen – ein Hook läuft
+  nur auf ein Ereignis hin, und ein erzwungener Turn kostet Modellaufrufe.
+  Offen: Janus als Channel-Server (Push statt Poll) als späterer Ausbau.
+
+- **11.09.** ✉️ **Präsenz-Lücke**: Eine Session mit Hintergrund-Subagenten
+  stand auf dem Board als „idle", obwohl sie Werkzeuge rief – ihr Turn begann
+  mit der Rückmeldung des Subagenten, nicht mit einer Eingabe, also ohne
+  `UserPromptSubmit`. Gleiche Lücke bei Kanal-Zustellung und Cross-Session-
+  Nachricht. ⚖️ `PreToolUse` meldet „arbeitet", schreibt aber nur bei
+  Zustandswechsel, damit nicht jeder Werkzeugaufruf `seit` zurücksetzt.
+
 - **11.09.** ⚡ **Agenten-Kanal (Stufe 2)**: Agenten adressieren sich mit
   `@name` (mehrere, `@all`); zugestellt wird nur an Genannte, der Mensch sieht
   den ganzen Verkehr und kann einwerfen. Zustellung nach dem **Minion-Muster** –

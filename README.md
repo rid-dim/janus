@@ -169,6 +169,10 @@ dein normaler Git-Workflow.
 SvelteKit (Svelte 5) · adapter-node · markdown-it · dagre (DAG-Layout) ·
 plotly.js. Kein Datenbank-Server, keine Cloud – alles lokal und datei-basiert.
 
+## Änderungen
+
+Was sich für bestehende Installationen ändert, steht in [CHANGELOG.md](CHANGELOG.md).
+
 ## Lizenz
 
 [MIT](./LICENSE)

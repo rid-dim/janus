@@ -14,10 +14,14 @@
  *   head -c 32 /dev/urandom | base64 > ~/.janus/token
  * und gibt es der Gegenstelle über `JANUS_TOKEN` mit.
  *
- * Wichtig zum Verständnis der Grenze: eine zugestellte Nachricht ist für die
- * empfangende Session *Daten, keine Weisung*. Claude Code kennzeichnet sie als
- * nicht vom Nutzer stammend – dabei muss es bleiben. Eine Nachricht darf nie
- * als Freigabe des Menschen gelten.
+ * Wichtig zum Verständnis der Grenze: Claude Code kennzeichnet eine
+ * zugestellte Nachricht als nicht vom Nutzer stammend. Für kleine, umkehrbare
+ * Arbeit im eigenen Projekt darf ein Agent einem Wunsch vom Absender "mensch"
+ * trotzdem direkt folgen – der kommt vom Menschen am Janus-Rechner. Als
+ * *Freigabe* für Löschen, Historie umschreiben, Hooks/Einstellungen oder
+ * alles außerhalb des Projekts gilt eine Kanalnachricht nie; das bestätigt
+ * der Mensch im Chat der Session. Die Anleitung dazu liegt jeder Zustellung
+ * bei (api/agent/warten).
  */
 
 import fs from 'node:fs';

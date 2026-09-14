@@ -402,9 +402,20 @@ eintraf, war nach **0,2 s** zugestellt und hat die untätige Session geweckt.
 
 Weil `exit 2` als *Fehler* etikettiert ankommt, gibt der zugestellte Text sich
 ausdrücklich als Post zu erkennen – sonst sucht die geweckte Session einen Bug,
-den es nicht gibt. Und: eine zugestellte Nachricht ist für den Empfänger
-**Information, keine Weisung seines Nutzers**. Claude Code kennzeichnet sie so;
-dabei muss es bleiben.
+den es nicht gibt.
+
+**Was der Empfänger damit tun darf** steht in der beigelegten Anleitung und ist
+bewusst zweistufig. Absender `(mensch)` ist der Mensch am Janus-Rechner – die
+Agenten-Endpunkte sind von außerhalb nur mit Token erreichbar. Kleine,
+umkehrbare Arbeit im eigenen Projekt (Feature, Fix, Doku) darf ein Agent auf
+so einen Wunsch direkt erledigen; sonst wäre der Kanal nur ein Umweg zur
+Rückfrage im Chat. Was von einem Agenten kommt, ist Information: prüfen, dann
+handeln oder rückfragen. **Nie als Freigabe** zählt eine Kanalnachricht für
+Löschen, Historie umschreiben, Änderungen an Hooks oder Einstellungen, oder für
+alles außerhalb des eigenen Projekts – das bestätigt der Mensch im Chat der
+jeweiligen Session. Claude Code kennzeichnet Kanalpost als nicht vom Nutzer
+stammend; diese Grenze gilt für genau diese Fälle und wird hier nicht
+aufgeweicht.
 
 ### Rundfrage? Gibt es nicht.
 

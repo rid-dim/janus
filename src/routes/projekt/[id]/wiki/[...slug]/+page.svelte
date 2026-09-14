@@ -13,14 +13,54 @@
 	let msg = $state(null);
 	let neueSeite = $state('');
 	let suchfeld = $state(data.q || '');
-	// Beim Seitenwechsel Editor schließen, Suchfeld mit URL synchron halten.
+	// Beim Seitenwechsel Editor schließen.
 	$effect(() => {
 		void data.page?.slug;
 		bodyEdit = false;
 	});
+	// Suchfeld mit der URL synchron halten – aber nur, wenn die URL von außen
+	// kam (Link, Zurück). Beim Tippen laufen die Volltext-Navigationen hinterher;
+	// würde jede davon das Feld zurücksetzen, verschluckte es Buchstaben.
+	let letzteNavQ = data.q || '';
 	$effect(() => {
-		suchfeld = data.q || '';
+		const q = data.q || '';
+		if (q !== letzteNavQ) {
+			letzteNavQ = q;
+			suchfeld = q;
+		}
 	});
+
+	// --- Live-Filter beim Tippen --------------------------------------------
+	// Zwei Schichten: die Seitenliste filtert sofort nach Titel (liegt schon
+	// im Browser), der Volltext kommt mit kurzer Verzögerung vom Server über
+	// ?q=, ohne Fokusverlust und ohne Verlaufseintrag pro Buchstabe.
+	const filterQ = $derived(suchfeld.trim().toLowerCase());
+	function flach(node, pfad = '') {
+		const out = node.seiten.map((s) => ({ ...s, pfad }));
+		for (const o of node.ordner) out.push(...flach(o, pfad + o.name + '/'));
+		return out;
+	}
+	const gefiltert = $derived.by(() => {
+		if (!filterQ) return null;
+		const eigene = flach(data.baum).filter((s) => s.title.toLowerCase().includes(filterQ));
+		const fremde = data.hubs.flatMap((h) =>
+			flach(h.baum).filter((s) => s.title.toLowerCase().includes(filterQ)).map((s) => ({ ...s, hubId: h.id, hubTitel: h.titel }))
+		);
+		return { eigene, fremde };
+	});
+	let suchTimer = null;
+	function suchUrl(q) {
+		return base + (data.page ? '/' + data.page.slug : '') + (q ? '?q=' + encodeURIComponent(q) : '');
+	}
+	function tippen() {
+		clearTimeout(suchTimer);
+		suchTimer = setTimeout(() => {
+			const q = suchfeld.trim();
+			if (q === (data.q || '')) return;
+			letzteNavQ = q;
+			goto(suchUrl(q), { keepFocus: true, replaceState: true, noScroll: true });
+		}, 250);
+	}
 
 	// --- eingeklappte Ordner (pro Projekt gemerkt) ---------------------------
 	let zu = $state({});
@@ -97,10 +137,10 @@
 	}
 	function suchen(e) {
 		e.preventDefault();
+		clearTimeout(suchTimer);
 		const q = suchfeld.trim();
-		goto(base + (data.page ? '/' + data.page.slug : '') + (q ? '?q=' + encodeURIComponent(q) : ''), {
-			keepFocus: true
-		});
+		letzteNavQ = q;
+		goto(suchUrl(q), { keepFocus: true });
 	}
 	const wikiHref = (slug) => base + '/' + slug.split('/').map(encodeURIComponent).join('/');
 	const abgestandenTage = (iso) => Math.round((new Date(data.heute) - new Date(iso)) / 86400000);
@@ -148,17 +188,31 @@
 		</div>
 
 		<form class="suche" onsubmit={suchen}>
-			<input placeholder="Wissen durchsuchen…" bind:value={suchfeld} />
+			<input placeholder="Wissen durchsuchen…" bind:value={suchfeld} oninput={tippen} />
 		</form>
 
 		<nav class="baum">
-			{#if data.anzahl === 0 && !data.hubs.length}
+			{#if gefiltert}
+				<p class="dim filter-info">{gefiltert.eigene.length + gefiltert.fremde.length} von {data.anzahl + data.hubs.reduce((n, h) => n + h.anzahl, 0)} Titeln</p>
+				{#each gefiltert.eigene as s (s.slug)}
+					<a class="seite" class:active={data.page?.slug === s.slug} href={wikiHref(s.slug)}>
+						{#if s.pfad}<span class="dim">{s.pfad}</span>{/if}{s.title}
+					</a>
+				{:else}
+					{#if !gefiltert.fremde.length}<p class="dim">Kein Titel passt – Volltext-Treffer rechts.</p>{/if}
+				{/each}
+				{#each gefiltert.fremde as s (s.hubId + '/' + s.slug)}
+					<a class="seite hub-seite" href={'/projekt/' + s.hubId + '/wiki/' + s.slug.split('/').map(encodeURIComponent).join('/')} title="öffnet im Hub-Projekt {s.hubId}">
+						{#if s.pfad}<span class="dim">{s.pfad}</span>{/if}{s.title} <span class="dim">· {s.hubTitel}</span>
+					</a>
+				{/each}
+			{:else if data.anzahl === 0 && !data.hubs.length}
 				<p class="dim">Noch kein Wissen hinterlegt (lege Dateien in <code>wissen/</code> an).</p>
 			{:else}
 				{@render baumEbene(data.baum, '')}
 			{/if}
 
-			{#each data.hubs as hub (hub.id)}
+			{#each gefiltert ? [] : data.hubs as hub (hub.id)}
 				<section class="hub">
 					<button class="ordner-kopf hub-kopf" onclick={() => toggleOrdner('hub:' + hub.id)} aria-expanded={!zu['hub:' + hub.id]}>
 						<span class="chev">{zu['hub:' + hub.id] ? '▸' : '▾'}</span>
@@ -373,6 +427,10 @@
 		color: var(--text);
 		font: inherit;
 		font-size: 13px;
+	}
+	.filter-info {
+		margin: 0 0 4px;
+		font-size: 0.78em;
 	}
 	.baum {
 		display: flex;

@@ -4,6 +4,13 @@ Neueste Einträge zuerst. Ergänzt wird hier, was sich für bestehende
 Installationen ändert – Entscheidungen und Hintergründe stehen in der
 Projekt-Chronik (`.janus/stand/chronik.md`).
 
+## 2026-09-14 – Wiki: Suche filtert beim Tippen
+
+- Das Suchfeld in der Wiki-Übersicht filtert die Seitenliste sofort nach
+  Titel (auch Seiten eingeblendeter Wissens-Hubs); Volltext-Treffer mit
+  Ausschnitt erscheinen nach kurzer Verzögerung, ohne Enter, ohne Fokusverlust
+  und ohne Verlaufseintrag pro Buchstabe. Enter sucht weiterhin sofort.
+
 ## 2026-09-14 – Minion: mehr Luft für den Präsenz-Aufruf
 
 - Nach einer Zustellung meldet der Minion die Session als „arbeitet", indem er

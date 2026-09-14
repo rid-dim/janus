@@ -44,6 +44,13 @@ beantwortet Janus. Ausführlich in [Plan](../../docs/plan-agenten-board.md).
 - [x] Erwähnungen überall im Text, Code-Spans ausgenommen, Fehlerbilder gemeldet
 - [x] Kopier-Knopf an jeder Nachricht
 - [ ] Aufräumen der Polls bei hartem Session-Abbruch
+- [ ] Wettlauf Stop gegen PreToolUse: beginnt der nächste Turn innerhalb von ~3 s
+      (Subagent-Rückmeldung, Zustellung), kann ein spätes „idle" ein früheres
+      „arbeitet" überschreiben – korrigiert sich beim nächsten Werkzeugaufruf.
+      Auf langsamen Windows-Hosts (Node-Start >3 s) ist das Fenster real. Ansatz,
+      falls es stört: Stop überschreibt kein jüngeres „arbeitet".
+- [ ] Minion schreibt Präsenz im eigenen Prozess statt über einen zweiten
+      Node-Start – spart 3 s auf langsamen Hosts und den Timeout ganz.
 - [ ] Mit zwei Maschinen gegentesten (MacBook ↔ Notebook, solange im selben Netz)
 
 ### Stufe 3 – Kanäle mit Verlauf

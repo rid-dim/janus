@@ -238,10 +238,15 @@ try {
 				// ein ganz anderes Dateisystem. Über HOME schlug der Aufruf dort
 				// still fehl, und die geweckte Session blieb als "idle" stehen.
 				const praesenz = new URL('./praesenz.mjs', import.meta.url);
+				// Großzügig bemessen: auf manchen Windows-Hosts dauert allein der
+				// Node-Start über 3 s (gemessen 3,3 s, Maximum 3,5 s), und
+				// parallel laufen womöglich weitere Hooks des gerade geweckten
+				// Turns. Reißt der Aufruf den Timeout, geschieht das still – und
+				// die Session stünde als "idle" da, während sie arbeitet.
 				execFileSync(process.execPath, [praesenz.pathname, '--status', 'arbeitet'], {
 					input: '{}',
 					stdio: ['pipe', 'ignore', 'ignore'],
-					timeout: 5000
+					timeout: 15000
 				});
 			} catch {
 				/* Präsenz ist Beiwerk, die Zustellung geht vor */

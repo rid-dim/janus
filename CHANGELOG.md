@@ -4,6 +4,18 @@ Neueste Einträge zuerst. Ergänzt wird hier, was sich für bestehende
 Installationen ändert – Entscheidungen und Hintergründe stehen in der
 Projekt-Chronik (`.janus/stand/chronik.md`).
 
+## 2026-09-14 – Minion: mehr Luft für den Präsenz-Aufruf
+
+- Nach einer Zustellung meldet der Minion die Session als „arbeitet", indem er
+  `praesenz.mjs` in einem zweiten Node-Prozess startet. Der Timeout dafür
+  steigt von 5 s auf 15 s: auf manchen Windows-Hosts dauert allein der
+  Node-Start über 3 s (gemessen 3,3 s), und parallel laufen womöglich weitere
+  Hooks. Ein gerissener Timeout blieb still und hätte die geweckte Session als
+  „idle" stehen lassen.
+
+**Beim Aktualisieren:** `hooks/minion.mjs` erneut nach `~/.janus/hooks/`
+kopieren. Wer die Hooks direkt aus dem Repo bezieht, hat es mit dem Pull.
+
 ## 2026-09-11 – Agenten-Board und Kanal
 
 **Neu**
